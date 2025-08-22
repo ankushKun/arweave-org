@@ -1,0 +1,57 @@
+---
+interface Props {
+  threshold?: number; // pixels scrolled before showing button
+}
+const { threshold = 800 } = Astro.props;
+---
+
+<button id="globalScrollTopBtn" data-threshold={threshold} class="fixed bottom-6 right-6 z-50 flex gap-2 items-center bg-black text-white shadow px-3 py-2 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-orange/30 transition-opacity duration-150 opacity-0 pointer-events-none">
+  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" class="h-4 w-4">
+    <path d="M5 12l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+  <span class="ml-2 text-xxs font-mono">Scroll back up</span>
+  <span class="sr-only">Scroll to top</span>
+  <style>
+    /* ensure on top of content but under any modal overlays */
+  </style>
+</button>
+
+<script>
+  // @ts-check
+  (function(){
+    /** Initialize scroll-to-top button behavior */
+    function init(){
+      /** @type {HTMLElement | null} */
+      const btn = /** @type {HTMLElement | null} */ (document.getElementById('globalScrollTopBtn'));
+      if (!btn) return;
+      /** @type {string | null} */
+      const thresholdAttr = btn.getAttribute('data-threshold');
+      /** @type {number} */
+      const thresholdPx = Number.isFinite(Number(thresholdAttr)) ? Number(thresholdAttr) : 800;
+      /** Update button visibility based on current scroll position */
+      const update = () => {
+        const show = window.scrollY > thresholdPx;
+        btn.classList.toggle('opacity-0', !show);
+        btn.classList.toggle('pointer-events-none', !show);
+        btn.classList.toggle('opacity-100', show);
+        btn.classList.toggle('pointer-events-auto', show);
+      };
+      window.addEventListener('scroll', update, { passive: true });
+      document.addEventListener('visibilitychange', update);
+      window.addEventListener('resize', update, { passive: true });
+      // Run once immediately and after paint
+      update();
+      setTimeout(update, 0);
+      btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+
+

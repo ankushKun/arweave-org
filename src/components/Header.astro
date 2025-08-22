@@ -12,28 +12,24 @@ const links = [
 ---
 
 <header class="relative z-50 mx-auto max-w-main">
-  <Container
-    className="mx-auto px-4 flex flex-col lg:flex-row items-center justify-between pt-8 pb-4"
-  >
-    <div class="">
-      <a href="/" class="inline-block">
-        <Logo />
-      </a>
-    </div>
-    <nav class="">
-      <ul
-        class="flex mx-auto items-center space-x-2 md:space-x-5 text-base font-mono whitespace-nowrap"
-      >
+  <div class="px-4 flex items-center justify-between pt-8 pb-4">
+    <a href="/" class="inline-block">
+      <Logo />
+    </a>
+
+    {/* Desktop nav */}
+    <nav class="hidden md:block">
+      <ul class="flex items-center space-x-2 md:space-x-5 text-base font-mono whitespace-nowrap">
         {
           links.map((link) => (
-            <li>
+            <li class="active:scale-95 transition-transform duration-150 ease-out">
               <a
                 href={link.href}
                 class:list={[
-                  "font-mono px-2 py-1 transition-colors text-sm",
+                  "font-mono px-2 py-1 transition-transform duration-200 text-sm",
                   currentPathname === link.href
-                    ? "bg-orange text-white"
-                    : "text-gray-900 hover:text-orange",
+                    ? "bg-black text-white"
+                    : "text-gray-900 hover:text-gray-400",
                 ]}
               >
                 {link.label}
@@ -43,5 +39,87 @@ const links = [
         }
       </ul>
     </nav>
-  </Container>
+
+    {/* Mobile hamburger */}
+    <button
+      id="mobile-menu-button"
+      aria-label="Open menu"
+      class="md:hidden inline-flex items-center justify-center rounded p-2 text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black"
+    >
+      <span class="sr-only">Open main menu</span>
+      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+
+  {/* Mobile drawer and overlay */}
+  <div id="mobile-overlay" class="fixed inset-0 bg-black/40 hidden"></div>
+  <aside
+    id="mobile-drawer"
+    class="fixed top-0 right-0 h-full w-64 max-w-[80%] translate-x-full bg-white shadow-xl transition-transform duration-300 ease-out md:hidden"
+    aria-hidden="true"
+  >
+    <div class="flex items-center justify-between px-4 pt-8 pb-4">
+      <span class="text-sm font-mono text-gray-900">Menu</span>
+      <button id="mobile-menu-close" aria-label="Close menu" class="inline-flex items-center justify-center rounded p-2 text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="px-2 pb-8">
+      <ul class="space-y-2">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class:list={[
+                  "block font-mono px-3 py-2 text-sm rounded",
+                  currentPathname === link.href
+                    ? "bg-black text-white"
+                    : "text-gray-900 hover:bg-gray-100",
+                ]}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <script>
+    const openButton = document.getElementById('mobile-menu-button');
+    const closeButton = document.getElementById('mobile-menu-close');
+    const drawer = document.getElementById('mobile-drawer');
+    const overlay = document.getElementById('mobile-overlay');
+
+    function openDrawer() {
+      drawer?.classList.remove('translate-x-full');
+      overlay?.classList.remove('hidden');
+      overlay?.classList.add('block');
+      drawer?.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+      drawer?.classList.add('translate-x-full');
+      overlay?.classList.add('hidden');
+      overlay?.classList.remove('block');
+      drawer?.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    openButton?.addEventListener('click', openDrawer);
+    closeButton?.addEventListener('click', closeDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+  </script>
 </header>

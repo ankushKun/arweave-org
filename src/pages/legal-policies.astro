@@ -1,6 +1,7 @@
 ---
 import Container from "../components/Container.astro";
 import Layout from "../layouts/Layout.astro";
+import ScrollToTop from "../components/ScrollToTop.astro";
 
 const legal = [
   {
@@ -257,4 +258,5 @@ const html = legal.map((item) => {
       </div>
     </Container>
   </section>
+  <ScrollToTop threshold={800} />
 </Layout>

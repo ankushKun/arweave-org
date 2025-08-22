@@ -1,0 +1,110 @@
+---
+interface Props {
+  selector: string; // CSS selector to bind to
+  text?: string; // static tooltip text
+  attr?: string; // attribute to pull text from (e.g., 'data-fulldesc')
+  delay?: number; // ms before showing
+  fadeMs?: number; // fade-out duration
+  followMouse?: boolean; // follow cursor
+  rootSelector?: string; // optional root to observe (defaults to document.body)
+}
+
+const {
+  selector,
+  text,
+  attr,
+  delay = 300,
+  fadeMs = 100,
+  followMouse = true,
+  rootSelector,
+} = Astro.props as Props;
+---
+
+<script define:vars={{ selector, text, attr, delay, fadeMs, followMouse, rootSelector }}>
+  // @ts-nocheck
+  (function initTooltip() {
+    const SEL = { selector, text, attr, delay, fadeMs, followMouse, rootSelector };
+
+    function resolveText(el) {
+      if (SEL.text) return SEL.text;
+      if (SEL.attr) return el.getAttribute(SEL.attr) || '';
+      return el.getAttribute('data-tooltip') || el.getAttribute('title') || '';
+    }
+
+    function attach(el) {
+      if (!el || el.dataset.tooltipBound) return;
+      el.dataset.tooltipBound = '1';
+      let timer; let tipEl; let move;
+
+      function removeTip() {
+        if (!tipEl) return;
+        tipEl.style.opacity = '0';
+        setTimeout(() => { tipEl?.remove(); tipEl = null; }, SEL.fadeMs);
+        if (move) el.removeEventListener('mousemove', move);
+      }
+
+      el.addEventListener('mouseenter', (e) => {
+        timer = setTimeout(() => {
+          const text = resolveText(el);
+          if (!text) return;
+          tipEl = document.createElement('div');
+          tipEl.textContent = text;
+          tipEl.style.position = 'fixed';
+          tipEl.style.maxWidth = '280px';
+          tipEl.style.padding = '6px 8px';
+          tipEl.style.background = 'rgba(0,0,0,0.85)';
+          tipEl.style.color = '#fff';
+          tipEl.style.fontSize = '12px';
+          tipEl.style.pointerEvents = 'none';
+          tipEl.style.zIndex = '50';
+          tipEl.style.opacity = '0';
+          tipEl.style.transition = `opacity ${SEL.fadeMs}ms ease-out`;
+          document.body.appendChild(tipEl);
+          const place = (ev) => {
+            const x = Math.min(window.innerWidth - 20, ev.clientX + 12);
+            const y = Math.min(window.innerHeight - 20, ev.clientY + 12);
+            tipEl.style.left = x + 'px';
+            tipEl.style.top = y + 'px';
+          };
+          if (SEL.followMouse) {
+            move = place;
+            el.addEventListener('mousemove', move);
+            place(e);
+          } else {
+            // Position near element if not following mouse
+            const r = el.getBoundingClientRect();
+            tipEl.style.left = Math.max(8, r.left) + 'px';
+            tipEl.style.top = Math.max(8, r.top - 32) + 'px';
+          }
+          requestAnimationFrame(() => { tipEl && (tipEl.style.opacity = '1'); });
+        }, SEL.delay);
+      });
+
+      ['mouseleave','blur'].forEach(evt => el.addEventListener(evt, () => { clearTimeout(timer); removeTip(); }));
+    }
+
+    function scan(root) {
+      root.querySelectorAll(SEL.selector).forEach(attach);
+    }
+
+    function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+
+    ready(() => {
+      const root = SEL.rootSelector ? document.querySelector(SEL.rootSelector) : document.body;
+      if (!root) return;
+      scan(root);
+      const obs = new MutationObserver((muts) => {
+        muts.forEach(m => {
+          m.addedNodes && m.addedNodes.forEach(node => {
+            if (!(node instanceof Element)) return;
+            if (node.matches && node.matches(SEL.selector)) attach(node);
+            node.querySelectorAll && node.querySelectorAll(SEL.selector).forEach(attach);
+          });
+        });
+      });
+      obs.observe(root, { childList: true, subtree: true });
+    });
+  })();
+</script>
+
+

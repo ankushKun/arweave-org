@@ -23,10 +23,10 @@ export default {
         ],
         h4: [
           "20px",
-          { lineHeight: "159%", letterSpacing: "2px", fontWeight: "500" },
+          { lineHeight: "159%", letterSpacing: "0px", fontWeight: "500" },
         ],
         kicker: [
-          "18px",
+          "14px",
           { lineHeight: "159%", letterSpacing: "1px", fontWeight: "400" },
         ],
         p1: [
@@ -47,16 +47,17 @@ export default {
         ],
         footer1: [
           "14px",
-          { lineHeight: "normal", letterSpacing: "1.28px", fontWeight: "400" },
+          { lineHeight: "normal", letterSpacing: "1px", fontWeight: "400" },
         ],
         footer2: [
           "14px",
-          { lineHeight: "normal", letterSpacing: "1.28px", fontWeight: "400" },
+          { lineHeight: "normal", letterSpacing: "1px", fontWeight: "400" },
         ],
       },
       colors: {
-        orange: "#ff6700",
+        orange: "#F66700",
         link: "#0b0080",
+        secondaryLight1: "#DDE0E1",
         secondaryLight2: "#A8AFB3",
         secondaryLight4: "#525A60",
       },
@@ -65,7 +66,8 @@ export default {
         mono: ["Roboto Mono", "monospace"],
       },
       maxWidth: {
-        main: "1800px",
+        main: "1200px",
+        mainWide: "1600px",
       },
     },
   },

@@ -9,10 +9,12 @@ export default function TxnTable() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animOffset, setAnimOffset] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [showContent, setShowContent] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [error, setError] = useState(null);
   const tbodyRef = useRef(null);
   const [maxTxShown, setMaxTxShown] = useState(10);
+  const [startIndex, setStartIndex] = useState(0);
   
   // Move seen sets to component state to prevent persistence across re-renders
   const [seenPending, setSeenPending] = useState(new Set());
@@ -58,7 +60,6 @@ export default function TxnTable() {
       return json.data.transactions.edges.map(e => e.node);
     } catch (error) {
       console.error("Error fetching mined transactions:", error);
-      setError("Failed to fetch mined transactions");
       return [];
     }
   }
@@ -112,7 +113,6 @@ export default function TxnTable() {
       return json.data.transactions.edges.map(e => e.node);
     } catch (error) {
       console.error("Error fetching pending transactions:", error);
-      setError("Failed to fetch pending transactions");
       return [];
     }
   }
@@ -236,11 +236,15 @@ export default function TxnTable() {
   useEffect(() => {
     const loadInitialTxns = async () => {
       setIsLoading(true);
+      setShowContent(false);
       try {
-        const [minedTransactions, pendingTransactions] = await Promise.all([
+        const [minedRes, pendingRes] = await Promise.allSettled([
           getLatestMined(maxTxShown),
           getPendingTransactions()
         ]);
+
+        const minedTransactions = minedRes.status === 'fulfilled' ? minedRes.value : [];
+        const pendingTransactions = pendingRes.status === 'fulfilled' ? pendingRes.value : [];
 
         const formattedMined = minedTransactions.map(tx => ({
           id: tx.id,
@@ -280,7 +284,6 @@ export default function TxnTable() {
         setError(null); // Clear any previous errors on success
       } catch (error) {
         console.error("Error loading initial transactions:", error);
-        setError("Failed to load transactions");
       } finally {
         setIsLoading(false);
       }
@@ -288,6 +291,17 @@ export default function TxnTable() {
 
     loadInitialTxns();
   }, [maxTxShown]);
+
+  // Trigger fade-in when loading completes; keep mounted to allow transition
+  useEffect(() => {
+    if (!isLoading) {
+      setShowContent(false);
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setShowContent(true));
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [isLoading]);
 
   // Poll for new transactions
   useEffect(() => {
@@ -333,128 +347,66 @@ export default function TxnTable() {
         }
 
         if (newTxns.length > 0) {
-          const durationMs = 300;
-          const firstRow = tbodyRef.current?.querySelector('tr');
-          const rowHeight = firstRow ? firstRow.getBoundingClientRect().height : 0;
-
-          if (rowHeight === 0) {
-            // Fallback: update without animation
-            setTxns(prev => {
-              const merged = [...newTxns, ...prev];
-              return sortTransactionsByTime(merged).slice(0, maxTxShown);
-            });
-            return;
-          }
-
-          setIsAnimating(true);
-          setAnimOffset(-rowHeight * newTxns.length);
-
-          const timeout = setTimeout(() => {
-            setTxns(prev => {
-              const merged = [...newTxns, ...prev];
-              return sortTransactionsByTime(merged).slice(0, maxTxShown);
-            });
-            setIsAnimating(false);
-            setAnimOffset(0);
-            setError(null); // Clear any previous errors on success
-          }, durationMs);
-
-          return () => clearTimeout(timeout);
+          setTxns(prev => {
+            const merged = sortTransactionsByTime([...newTxns, ...prev]).slice(0, maxTxShown);
+            // Keep the current visible top row unchanged visually by advancing startIndex
+            setStartIndex(si => (merged.length > 0 ? (si + newTxns.length) % merged.length : 0));
+            setError(null);
+            return merged;
+          });
         }
       } catch (error) {
         console.error("Error polling transactions:", error);
-        setError("Failed to poll transactions");
       }
     }, 10000); // Poll every 10 seconds instead of 5 to reduce API load
 
     return () => clearInterval(pollInterval);
   }, [maxTxShown, seenMined, seenPending]);
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center py-8">
-          {/* 
-          // Hiding loading because it is too distracting.
-          <div className="text-gray-500">Loading transactions...</div> */}
-        </div>
-      </div>
-    );
-  }
+  // Continuous carousel: rotate one row periodically toward newest (index 0)
+  useEffect(() => {
+    let cancelled = false;
+    const animationDurationMs = 500; // how long the movement takes
+    const cycleIntervalMs = 1500; // how often to move to next row (slower carousel)
 
-  if (error) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center py-8">
-          <div className="text-red-500 mb-4">{error}</div>
-          <button 
-            onClick={() => {
-              setError(null);
-              setIsLoading(true);
-              // Trigger a reload by calling the initial load effect
-              const loadInitialTxns = async () => {
-                try {
-                  const [minedTransactions, pendingTransactions] = await Promise.all([
-                    getLatestMined(maxTxShown),
-                    getPendingTransactions()
-                  ]);
+    const tick = () => {
+      if (cancelled) return;
+      if (txns.length < 2) return; // nothing to cycle
 
-                  const formattedMined = minedTransactions.map(tx => ({
-                    id: tx.id,
-                    size: tx.data?.size || 0,
-                    timestamp: tx.block?.timestamp || null,
-                    owner: tx.owner?.address,
-                    blockHeight: tx.block?.height,
-                    tags: tx.tags || [],
-                    status: 'mined'
-                  }));
+      const firstRow = tbodyRef.current?.querySelector('tr');
+      const rowHeight = firstRow ? firstRow.getBoundingClientRect().height : 0;
+      if (!rowHeight) return;
 
-                  const formattedPending = pendingTransactions.map(tx => ({
-                    id: tx.id,
-                    size: tx.data?.size || 0,
-                    timestamp: null,
-                    owner: tx.owner?.address,
-                    blockHeight: null,
-                    tags: tx.tags || [],
-                    status: 'pending'
-                  }));
+      setIsAnimating(true);
+      // Move content down to reveal newer (lower index) item at top
+      setAnimOffset(-rowHeight);
 
-                  const allTxns = sortTransactionsByTime([...formattedMined, ...formattedPending])
-                    .slice(0, maxTxShown);
-                  
-                  setTxns(allTxns);
+      setTimeout(() => {
+        if (cancelled) return;
+        // Decrement startIndex to move toward index 0 (newest)
+        setStartIndex(prev => (txns.length > 0 ? (prev - 1 + txns.length) % txns.length : 0));
+        setIsAnimating(false);
+        setAnimOffset(0);
+        if (!cancelled) setTimeout(tick, cycleIntervalMs);
+      }, animationDurationMs);
+    };
 
-                  const newSeenMined = new Set();
-                  const newSeenPending = new Set();
-                  
-                  formattedMined.forEach(tx => newSeenMined.add(tx.id));
-                  formattedPending.forEach(tx => newSeenPending.add(tx.id));
-                  
-                  setSeenMined(newSeenMined);
-                  setSeenPending(newSeenPending);
-                } catch (error) {
-                  console.error("Error retrying transaction load:", error);
-                  setError("Failed to retry loading transactions");
-                } finally {
-                  setIsLoading(false);
-                }
-              };
-              loadInitialTxns();
-            }}
-            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+    // Start the cycle shortly after mount/loading
+    const startId = setTimeout(tick, cycleIntervalMs);
+    return () => {
+      cancelled = true;
+      clearTimeout(startId);
+    };
+  }, [txns.length]);
+
+  // Keep component mounted during loading and on errors to enable fade-in
 
   return (
-    <div className="w-full mt-auto mb-6 text-xxs">
+    <div className={`w-full mt-auto mb-6 text-xxs transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`} style={{ willChange: 'opacity' }}>
       {/* Mobile view - stacked cards */}
       <div className="block lg:hidden space-y-3">
-        {txns.map((txn, i) => {
+        {txns.length > 0 && Array.from({ length: txns.length }).map((_, i) => {
+          const txn = txns[(startIndex + i) % txns.length];
           const total = txns.length;
           const isEdge = i === 0 || i === total - 1;
           const isNearEdge = i === 1 || i === total - 2;
@@ -468,7 +420,7 @@ export default function TxnTable() {
 
           return (
             <div
-              key={`${txn.id}-${txn.status}`}
+              key={`${txn.id}-${txn.status}-${i}`}
               className={cardClass}
               onClick={() => window.open(`https://arweave.net/${txn.id}`, '_blank')}
             >
@@ -479,7 +431,7 @@ export default function TxnTable() {
                 </span>
               </div>
               
-              <div className="font-mono text-orange mb-2">
+              <div className="font-mono mb-2">
                 {txn.id.slice(0, 12)}...{txn.id.slice(-12)}
               </div>
               
@@ -498,12 +450,13 @@ export default function TxnTable() {
             ref={tbodyRef}
             style={{
               transform: `translateY(${-animOffset}px)`,
-              transition: isAnimating ? 'transform 300ms ease-in-out' : 'none',
+              transition: isAnimating ? 'transform 500ms ease-in-out' : 'none',
               willChange: isAnimating ? 'transform' : 'auto',
             }}
             className='whitespace-nowrap'
           >
-            {txns.map((txn, i) => {
+            {txns.length > 0 && Array.from({ length: txns.length }).map((_, i) => {
+              const txn = txns[(startIndex + i) % txns.length];
               const total = txns.length;
               const isEdge = i === 0 || i === total - 1;
               const isNearEdge = i === 1 || i === total - 2;
@@ -517,14 +470,14 @@ export default function TxnTable() {
 
               return (
                 <tr
-                  key={`${txn.id}-${txn.status}`}
+                  key={`${txn.id}-${txn.status}-${i}`}
                   className={rowClass}
                   onClick={() => window.open(`https://arweave.net/${txn.id}`, '_blank')}
                 >
                   {/* <td className="py-3 px-4 text-right font-mono text-gray-500">
                     {txn.status === 'mined' && txn.blockHeight ? txn.blockHeight : '—'}
                   </td> */}
-                  <td className="py-3 pl-4 font-mono text-orange text-left w-1/4">
+                  <td className="py-3 pl-4 font-mono text-gray-500 text-left w-1/4">
                     <div className="flex items-center gap-2">
                       <span>{txn.id.slice(0, 10)}...{txn.id.slice(-10)}</span>
                     </div>

@@ -1,58 +1,48 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Container from "../components/Container.astro";
-import Resource from "../components/Resource.astro";
+import ScrollToTop from "../components/ScrollToTop.astro";
+import FooterAlt from "../components/Footer-Alt.astro";
+import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
 ---
 
 <Layout title="Build on Arweave">
   <section class="relative z-10" id="build" aria-label="Build on Arweave" class="pb-12">
 
       <!-- Kicker -->
-      <div class="text-kicker font-mono">Build Arweave.</div>
+      <div class="text-kicker lg:text-[16px] font-mono">Build Arweave.</div>
 
       <!-- Headline -->
-      <h1 class="text-h1 lg:text-[56px] font-sans mt-2">Host your web app.</h1>
+      <h1 class="text-h1 lg:text-[48px] font-sans mt-2">Host your web app.</h1>
 
       <!-- Paragraph -->
-      <p class="text-p1 lg:text-[16px] font-sans mt-3 max-w-4xl">
+      <p class="text-p1 lg:text-[14px] font-sans mt-3 max-w-4xl">
         Let's build on Arweave, which ensures your web app is permanently accessible online. This guarantees that your
         application remains available to users, eliminating the risk of being taken down or lost.
       </p>
 
       <!-- Content + Right sidebar layout -->
-      <div class="mt-10 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px] gap-8 items-start">
+      <div class="mt-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_350px] gap-8 items-center">
         <!-- Main content: steps -->
-        <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-10">
           <!-- Step 1 -->
           <section>
-            <h3 class="text-h2 font-mono">Step 1: Upload your file.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure it's under 100kb.</p>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure it's under 100kb.</p>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure it's under 100kb.</p>
+            <h3 class="text-h4 font-sans">Step 1: Upload your code.</h3>
+            <p class="text-p3 font-sans mt-2">You can upload your code to the right. Make sure it's under 100kb to deploy free.</p>
+            <p class="text-p3 font-sans mt-2">If over please connect wallet.</p>
+            <p class="text-p3 font-sans mt-2">If you don't have a wallet here's a link.</p>
           </section>
 
           <!-- Step 2 -->
           <section>
-            <h3 class="text-h2 font-mono">Step 2: Upload your code.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure its under 100kb.</p>
+            <h3 class="text-h4">Step 2: Wait to process.</h3>
+            <p class="text-p3 font-sans mt-2">Waiting for it to be uploaded to the permaweb..</p>
           </section>
 
           <!-- Step 3 -->
           <section>
-            <h3 class="text-h2 font-mono">Step 3: …</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure its under 100kb.</p>
-          </section>
-
-          <!-- Step 4 -->
-          <section>
-            <h3 class="text-h2 font-mono">Step 4: Path Manifests.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure its under 100kb.</p>
-          </section>
-
-          <!-- Step 5 -->
-          <section>
-            <h3 class="text-h2 font-mono">Step 5: Build needs static output.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight2">You can upload your file for free and access it immediately after. Make sure its under 100kb.</p>
+            <h3 class="text-h4">Step 3: Visit and access your app.</h3>
+            <p class="text-p3 font-sans mt-2">Your app is permanently accesible onchain via Arweave.</p>
           </section>
         </div>
 
@@ -77,87 +67,87 @@ import Resource from "../components/Resource.astro";
   <!-- Data-focused developer section -->
   <section class="pt-24" aria-label="Develop with data">
 
+    <!-- Kicker -->
+    <div class="text-kicker lg:text-[16px] font-mono">Build Arweave.</div>
+
+    <!-- Headline -->
       <h2 class="text-h1 lg:text-[56px] font-sans">Develop with a foundation of data.</h2>
 
       <!-- Cards grid: 4+1 layout on large screens -->
       <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left large card spans 4 columns -->
-        <article class="border border-gray-200 p-6 lg:col-span-2 lg:row-span-2 flex flex-col justify-between min-h-[300px]">
-          <div>
-            <h3 class="text-h4 font-sans">Get Started Developing.</h3>
-            <p class="text-p2 font-sans mt-2 text-secondaryLight4">
-              Your application remains accessible to everyone, forever, without the risk of censorship or removal. Visit the permaweb cookbook to start.
-            </p>
-          </div>
-          <div class="mt-6">
-            <a href="#" class="inline-block bg-orange text-white px-4 py-2 font-mono">Visit the Permaweb Cookbook →</a>
-          </div>
-        </article>
+        <Card
+          className="lg:col-span-2 lg:row-span-2 min-h-[300px]"
+          showMedia={false}
+          title="Get Started Developing."
+          description="Your application remains accessible to everyone, forever, without the risk of censorship or removal. Visit the permaweb cookbook to start."
+          href="#"
+          ctaText="Visit the Permaweb Cookbook"
+          ctaVariant="secondary"
+          contentJustifyBetween={true}
+        />
 
-        <!-- Right column top: Dev Utility Tools -->
-        <article class="border border-gray-200 p-6 flex flex-col justify-between min-h-[300px] lg:col-start-3">
-          <div>
-            <h3 class="text-h4 font-sans">Dev Utility Tools.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight4">
-              Build with ar.io’s comprehensive suite of developer utility tools.
-            </p>
-          </div>
-          <div class="mt-4">
-            <a href="#" class="inline-block text-orange underline font-mono">Use ar.io’s development suite →</a>
-          </div>
-        </article>
+        <Card
+          className="lg:col-start-3 min-h-[300px]"
+          showMedia={false}
+          title="Dev Utility Tools."
+          description="Build with ar.io’s comprehensive suite of developer utility tools."
+          href="#"
+          ctaText="Use ar.io’s development suite"
+          contentJustifyBetween={true}
+        />
 
-        <!-- Right column bottom: View history -->
-        <article class="border border-gray-200 p-6 flex flex-col justify-between min-h-[300px] lg:col-start-3">
-          <div>
-            <h3 class="text-h4 font-sans">View Arweave History.</h3>
-            <p class="text-p3 font-sans mt-2 text-secondaryLight4">
-              Blocks, accounts, transactions, protocols, and tokens.
-            </p>
-          </div>
-          <div class="mt-4">
-            <a href="#" class="inline-block text-orange underline font-mono">Visit Viewblock →</a>
-          </div>
-        </article>
+        <Card
+          className="lg:col-start-3 min-h-[300px]"
+          showMedia={false}
+          title="View Arweave History."
+          description="Blocks, accounts, transactions, protocols, and tokens."
+          href="#"
+          ctaText="Visit Viewblock"
+          contentJustifyBetween={true}
+        />
       </div>
 
   </section>
 
   <!-- Decentralized Compute section -->
-  <section class="py-24" aria-label="Decentralized Compute">
+  <section class="mt-6 p-6 border border-gray-200 bg-[#FCFCFC]" aria-label="Decentralized Compute">
 
-      <h2 class="text-h3 font-sans">Decentralized Compute.</h2>
-      <p class="text-p2 font-sans mt-2 max-w-3xl text-secondaryLight4">
+      <!-- Headline -->
+      <h2 class="text-h3 font-sans ">Decentralized Compute.</h2>
+      <p class="text-p1 lg:text-[14px] font-sans mt-2 max-w-xl ">
         The permaweb foundation backs projects like AO and Hyperbeam, improving smart contracts and Arweave’s infrastructure. Here’s how to begin.
       </p>
 
-      <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- AO Card -->
-        <article class="border border-gray-200 p-6 flex flex-col justify-between min-h-[220px]">
+        <article class="border border-gray-200 p-6 flex bg-white flex-col justify-between min-h-[300px]">
           <div>
-            <div class="h-12 w-24 bg-gray-100 mb-4"></div>
-            <p class="text-p3 font-sans text-secondaryLight4">
+            <img src="/src/images/logos/AO-logo-1.svg" alt="AO" class="h-6 w-auto mb-4" />
+            <p class="text-p3 font-sans">
               Create and deploy processes (smart contracts) on Arweave.
             </p>
           </div>
           <div class="mt-6">
-            <a href="#" class="inline-block bg-orange text-white px-4 py-2 font-mono">Explore AO Ecosystem →</a>
+            <Button href="#" variant="secondary" fullWidth showArrow>Explore AO Ecosystem</Button>
           </div>
         </article>
 
         <!-- Hyperbeam Card -->
-        <article class="border border-gray-200 p-6 flex flex-col justify-between min-h-[220px]">
+        <article class="border border-gray-200 bg-white p-6 flex flex-col justify-between min-h-[300px]">
           <div>
-            <div class="h-12 w-40 bg-gray-100 mb-4"></div>
-            <p class="text-p3 font-sans text-secondaryLight4">
+            <img src="/src/images/logos/hyperbeam-logo-1.svg" alt="Hyperbeam" class="h-6 w-auto mb-4" />
+            <p class="text-p3 font-sans">
               Bringing web2 capabilities to the permaweb.
             </p>
           </div>
           <div class="mt-6">
-            <a href="#" class="inline-block bg-orange text-white px-4 py-2 font-mono">Start Hyperbeam →</a>
+            <Button href="#" variant="secondary" fullWidth showArrow>Start Hyperbeam</Button>
           </div>
         </article>
       </div>
 
   </section>
+  <FooterAlt />
+
+  <ScrollToTop threshold={800} />
 </Layout>

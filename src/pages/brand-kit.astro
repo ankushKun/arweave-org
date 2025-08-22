@@ -7,6 +7,7 @@ import Colours from "../images/brand-kit/colours.png";
 import SealW from "../images/brand-kit/seal-white.svg";
 import SealD from "../images/brand-kit/seal-dark.svg";
 import Layout from "../layouts/Layout.astro";
+import ScrollToTop from "../components/ScrollToTop.astro";
 import Container from "../components/Container.astro";
 ---
 
@@ -199,4 +200,5 @@ import Container from "../components/Container.astro";
       </div>
     </Container>
   </section>
+  <ScrollToTop threshold={800} />
 </Layout>
