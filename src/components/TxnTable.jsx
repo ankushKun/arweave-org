@@ -7,7 +7,8 @@ const PENDING_URL = "https://arweave.net/tx/pending";
 export default function TxnTable() {
   const [txns, setTxns] = useState([]);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [animOffset, setAnimOffset] = useState(0);
+  const [rowHeight, setRowHeight] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -15,10 +16,22 @@ export default function TxnTable() {
   const tbodyRef = useRef(null);
   const [maxTxShown, setMaxTxShown] = useState(10);
   const [startIndex, setStartIndex] = useState(0);
+  const BUFFER_MULTIPLIER = 4; // keep extra items in memory beyond what we render
   
   // Move seen sets to component state to prevent persistence across re-renders
   const [seenPending, setSeenPending] = useState(new Set());
   const [seenMined, setSeenMined] = useState(new Set());
+
+  // Measure the visual step distance between adjacent rows (top-to-top)
+  function measureStep() {
+    const tbody = tbodyRef.current;
+    if (!tbody) return 0;
+    const rows = tbody.querySelectorAll('tr');
+    if (!rows || rows.length < 2) return 0;
+    const top0 = rows[0].getBoundingClientRect().top;
+    const top1 = rows[1].getBoundingClientRect().top;
+    return top1 - top0;
+  }
 
   async function getLatestMined(limit = 10) {
     const query = `
@@ -152,17 +165,35 @@ export default function TxnTable() {
     return `${days} day${days !== 1 ? 's' : ''} ago`;
   }
 
-  // Helper function to sort transactions by timestamp (newest first)
+  // Helper function to sort transactions deterministically
+  // Order: items WITH timestamps first (newest to oldest),
+  // tie-break by blockHeight (desc), then by id (asc).
+  // Items WITHOUT timestamps come after, sorted by id (asc).
   function sortTransactionsByTime(transactions) {
     return transactions.sort((a, b) => {
-      // If both have timestamps, sort by timestamp
-      if (a.timestamp && b.timestamp) {
-        return b.timestamp - a.timestamp;
+      const aHasTs = typeof a.timestamp === 'number' && !Number.isNaN(a.timestamp);
+      const bHasTs = typeof b.timestamp === 'number' && !Number.isNaN(b.timestamp);
+
+      // Items with timestamps come first
+      if (aHasTs && !bHasTs) return -1;
+      if (!aHasTs && bHasTs) return 1;
+
+      if (aHasTs && bHasTs) {
+        // Primary: timestamp desc (newest first)
+        if (b.timestamp !== a.timestamp) return b.timestamp - a.timestamp;
+        // Secondary: blockHeight desc if available
+        const aH = typeof a.blockHeight === 'number' ? a.blockHeight : -Infinity;
+        const bH = typeof b.blockHeight === 'number' ? b.blockHeight : -Infinity;
+        if (bH !== aH) return bH - aH;
+        // Tertiary: id asc for stability
+        if (a.id < b.id) return -1;
+        if (a.id > b.id) return 1;
+        return 0;
       }
-      // If only one has timestamp, prioritize the one with timestamp
-      if (a.timestamp && !b.timestamp) return -1;
-      if (!a.timestamp && b.timestamp) return 1;
-      // If neither has timestamp, maintain order
+
+      // Neither has timestamp: sort by id asc for determinism
+      if (a.id < b.id) return -1;
+      if (a.id > b.id) return 1;
       return 0;
     });
   }
@@ -239,7 +270,7 @@ export default function TxnTable() {
       setShowContent(false);
       try {
         const [minedRes, pendingRes] = await Promise.allSettled([
-          getLatestMined(maxTxShown),
+          getLatestMined(maxTxShown * BUFFER_MULTIPLIER),
           getPendingTransactions()
         ]);
 
@@ -266,11 +297,13 @@ export default function TxnTable() {
           status: 'pending'
         }));
 
-        // Merge and sort by timestamp (newest first)
+        // Merge and sort by timestamp (newest first); keep a larger buffer in memory
         const allTxns = sortTransactionsByTime([...formattedMined, ...formattedPending])
-          .slice(0, maxTxShown);
+          .slice(0, maxTxShown * BUFFER_MULTIPLIER);
         
         setTxns(allTxns);
+        // Start from an older item so the carousel can move toward newest
+        setStartIndex(Math.min(Math.max(allTxns.length - 1, 0), Math.max(maxTxShown, 0)));
 
         // Add to seen transactions
         const newSeenMined = new Set();
@@ -348,7 +381,8 @@ export default function TxnTable() {
 
         if (newTxns.length > 0) {
           setTxns(prev => {
-            const merged = sortTransactionsByTime([...newTxns, ...prev]).slice(0, maxTxShown);
+            const merged = sortTransactionsByTime([...newTxns, ...prev])
+              .slice(0, maxTxShown * BUFFER_MULTIPLIER);
             // Keep the current visible top row unchanged visually by advancing startIndex
             setStartIndex(si => (merged.length > 0 ? (si + newTxns.length) % merged.length : 0));
             setError(null);
@@ -367,27 +401,31 @@ export default function TxnTable() {
   useEffect(() => {
     let cancelled = false;
     const animationDurationMs = 500; // how long the movement takes
-    const cycleIntervalMs = 1500; // how often to move to next row (slower carousel)
+    const cycleIntervalMs = 300; // how often to move to next row (shorter interval)
 
     const tick = () => {
       if (cancelled) return;
       if (txns.length < 2) return; // nothing to cycle
 
-      const firstRow = tbodyRef.current?.querySelector('tr');
-      const rowHeight = firstRow ? firstRow.getBoundingClientRect().height : 0;
-      if (!rowHeight) return;
+      const measuredRowHeight = measureStep();
+      if (!measuredRowHeight) return;
+      if (measuredRowHeight !== rowHeight) setRowHeight(measuredRowHeight);
 
+      // Animate from -rowHeight to 0
       setIsAnimating(true);
-      // Move content down to reveal newer (lower index) item at top
-      setAnimOffset(-rowHeight);
+      setTranslateY(0);
 
       setTimeout(() => {
         if (cancelled) return;
         // Decrement startIndex to move toward index 0 (newest)
         setStartIndex(prev => (txns.length > 0 ? (prev - 1 + txns.length) % txns.length : 0));
+        // Disable transition and snap back to -rowHeight on next frame to avoid jitter
         setIsAnimating(false);
-        setAnimOffset(0);
-        if (!cancelled) setTimeout(tick, cycleIntervalMs);
+        requestAnimationFrame(() => {
+          if (cancelled) return;
+          setTranslateY(-measuredRowHeight);
+          if (!cancelled) setTimeout(tick, cycleIntervalMs);
+        });
       }, animationDurationMs);
     };
 
@@ -397,25 +435,39 @@ export default function TxnTable() {
       cancelled = true;
       clearTimeout(startId);
     };
+  }, [txns.length, rowHeight]);
+
+  // Measure step distance when data changes
+  useEffect(() => {
+    const measuredRowHeight = measureStep();
+    if (measuredRowHeight && measuredRowHeight !== rowHeight) {
+      setRowHeight(measuredRowHeight);
+    }
   }, [txns.length]);
+
+  // Ensure we start offset by -rowHeight when not animating
+  useEffect(() => {
+    if (!isAnimating && rowHeight) {
+      setTranslateY(-rowHeight);
+    }
+  }, [rowHeight, isAnimating]);
 
   // Keep component mounted during loading and on errors to enable fade-in
 
   return (
-    <div className={`w-full mt-auto mb-6 text-xxs transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`} style={{ willChange: 'opacity' }}>
+    <div className={`relative w-full mt-auto mb-6 overflow-hidden text-xxs transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`} style={{
+      willChange: 'opacity',
+    }}>
+      {/* Top/Bottom overlay gradients for edge fade */}
+      <div className="pointer-events-none absolute left-0 right-0 top-0 h-20 z-10 bg-gradient-to-b from-white to-transparent" />
+      <div className="pointer-events-none absolute left-0 right-0 bottom-0 h-64 z-10 bg-gradient-to-t from-white to-transparent" />
       {/* Mobile view - stacked cards */}
-      <div className="block lg:hidden space-y-3">
+      <div
+        className="block lg:hidden space-y-3"
+      >
         {txns.length > 0 && Array.from({ length: txns.length }).map((_, i) => {
           const txn = txns[(startIndex + i) % txns.length];
-          const total = txns.length;
-          const isEdge = i === 0 || i === total - 1;
-          const isNearEdge = i === 1 || i === total - 2;
-
           const classes = ['bg-white border-b border-gray-100 p-4 hover:border-orange-300 transition-all duration-300'];
-
-          if(isEdge) classes.push('opacity-40', 'blur-[1px]');
-          if(isNearEdge) classes.push('opacity-80', 'blur-[0.5px]');
-
           const cardClass = classes.join(' ');
 
           return (
@@ -444,28 +496,54 @@ export default function TxnTable() {
       </div>
 
       {/* Desktop view - table */}
-      <div className="hidden lg:block overflow-x-auto text-xxs">
-        <table className="min-w-full table-fixed border-separate border-spacing-y-2">
-          <tbody
-            ref={tbodyRef}
-            style={{
-              transform: `translateY(${-animOffset}px)`,
-              transition: isAnimating ? 'transform 500ms ease-in-out' : 'none',
-              willChange: isAnimating ? 'transform' : 'auto',
-            }}
-            className='whitespace-nowrap'
-          >
+      <div
+        className="hidden lg:block overflow-x-auto text-xxs"
+      >
+        <div className="h-[75vh] overflow-hidden">
+          <table className="min-w-full table-fixed border-separate border-spacing-y-2">
+            <tbody
+              ref={tbodyRef}
+              style={{
+                transform: `translateY(${translateY}px)`,
+                transition: isAnimating ? 'transform 500ms ease-in-out' : 'none',
+                willChange: isAnimating ? 'transform' : 'auto',
+              }}
+              className='whitespace-nowrap'
+            >
+            {/* Prepend buffer row to create seamless top entry */}
+            {txns.length > 0 && (() => {
+              const total = txns.length;
+              const txn = txns[(startIndex - 1 + total) % total];
+              const classes = ['hover:bg-orange/5', 'cursor-pointer', 'transition-all', 'duration-300'];
+              const rowClass = classes.join(' ');
+              return (
+                <tr
+                  key={`buffer-${txn.id}-${txn.status}`}
+                  className={rowClass}
+                  onClick={() => window.open(`https://arweave.net/${txn.id}`, '_blank')}
+                >
+                  {/* <td className="py-3 px-4 text-right font-mono text-gray-500">
+                    {txn.status === 'mined' && txn.blockHeight ? txn.blockHeight : '—'}
+                  </td> */}
+                  <td className="py-3 pl-4 font-mono text-gray-500 text-left w-1/4">
+                    <div className="flex items-center gap-2">
+                      <span>{txn.id.slice(0, 10)}...{txn.id.slice(-10)}</span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono text-gray-900 w-1/4">{formatSize(txn.size)}</td>
+                  <td className="py-3 px-4 text-right w-1/4">
+                    <span className={`px-2 py-1`}>
+                      {txn.status === 'pending' ? 'Pending' : 'Mined'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right text-gray-500 w-1/4">{tsToRelativeTime(txn.timestamp, currentTime)}</td>
+                </tr>
+              );
+            })()}
+
             {txns.length > 0 && Array.from({ length: txns.length }).map((_, i) => {
               const txn = txns[(startIndex + i) % txns.length];
-              const total = txns.length;
-              const isEdge = i === 0 || i === total - 1;
-              const isNearEdge = i === 1 || i === total - 2;
-
               const classes = ['hover:bg-orange/5', 'cursor-pointer', 'transition-all', 'duration-300'];
-
-              if(isEdge) classes.push('opacity-40', 'blur-[2px]');
-              if(isNearEdge) classes.push('opacity-80', 'blur-[1px]');
-
               const rowClass = classes.join(' ');
 
               return (
@@ -492,8 +570,9 @@ export default function TxnTable() {
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
