@@ -33,14 +33,14 @@ const cls = [
 
 {href ? (
   <a href={href} class={cls}>
-    <span class={variant === 'minimal' ? 'transition-opacity group-hover:opacity-70' : ''}>
+    <span class={variant === 'minimal' ? 'transition-opacity hover:opacity-70' : ''}>
       <slot />
     </span>
     {showArrow && <i class="ph ph-arrow-right ml-1 text-orange"></i>}
   </a>
 ) : (
   <button class={cls}>
-    <span class={variant === 'minimal' ? 'transition-opacity group-hover:opacity-70' : ''}>
+    <span class={variant === 'minimal' ? 'transition-opacity hover:opacity-70' : ''}>
       <slot />
     </span>
     {showArrow && <i class="ph ph-arrow-right ml-1 text-orange"></i>}

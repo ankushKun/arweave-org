@@ -1,0 +1,71 @@
+---
+---
+
+<!-- Wallet Choice Modal -->
+<div id="wallet-modal" class="fixed inset-0 z-[999] hidden items-center justify-center">
+  <button id="wallet-modal-backdrop" class="absolute inset-0 bg-black/30" aria-label="Close modal"></button>
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="wallet-modal-title"
+    class="relative mx-4 w-full max-w-md rounded-2xl bg-white text-black p-5 shadow-xl ring-1 ring-black/10"
+  >
+    <div class="mb-4">
+      <h2 id="wallet-modal-title" class="text-lg font-semibold">Choose how to continue</h2>
+      <p class="text-sm text-neutral-500">Fastest for new users: WanderConnect.</p>
+    </div>
+
+    <div class="grid gap-2">
+      <button
+        id="btn-wanderconnect"
+        class="w-full rounded-xl px-4 py-3 text-left font-medium bg-black text-white hover:bg-black/90"
+      >
+        Continue with WanderConnect (recommended)
+        <span class="block text-xs font-normal opacity-70">
+          Email / social sign-in → ready to post free tx
+        </span>
+      </button>
+
+      <a
+        href="https://beaconwallet.app"
+        target="_blank"
+        rel="noreferrer"
+        class="w-full rounded-xl px-4 py-3 text-left font-medium ring-1 ring-neutral-200 hover:bg-neutral-100"
+      >
+        Use Beacon (external)
+        <span class="block text-xs font-normal opacity-70">Open Beacon site</span>
+      </a>
+
+      <a
+        href="https://wander.app"
+        target="_blank"
+        rel="noreferrer"
+        class="w-full rounded-xl px-4 py-3 text-left font-medium ring-1 ring-neutral-200 hover:bg-neutral-100"
+      >
+        Use Wander Extension
+        <span class="block text-xs font-normal opacity-70">Browser extension</span>
+      </a>
+
+      <a
+        href="https://arweave.app/connect"
+        target="_blank"
+        rel="noreferrer"
+        class="w-full rounded-xl px-4 py-3 text-left font-medium ring-1 ring-neutral-200 hover:bg-neutral-100"
+      >
+        Use Arweave.app
+        <span class="block text-xs font-normal opacity-70">Web wallet</span>
+      </a>
+    </div>
+
+    <div class="mt-4 flex justify-end">
+      <button
+        id="wallet-modal-cancel"
+        class="rounded-lg px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+  </div>
+
+

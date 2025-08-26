@@ -9,10 +9,16 @@ interface Props {
   image?: string | null;
   showMedia?: boolean; // hide the media area for text-only cards
   mediaHeightClass?: string; // control media block height (e.g., 'h-56')
-  mediaPlaceholderClass?: string; // control placeholder color
+  mediaBG?: string; // control placeholder color
+  itemsPosition?: string; 
+  imageWidthClass?: string;
   className?: string; // optional wrapper classes (e.g., grid spans)
   ctaVariant?: 'minimal' | 'secondary' | 'primary';
   contentJustifyBetween?: boolean;
+  // Optional bottom overlay and image for special cards
+  showBottomOverlay?: boolean;
+  bottomOverlayHeightClass?: string; 
+  position?: string;
 }
 
 const {
@@ -23,21 +29,36 @@ const {
   image = null,
   showMedia = true,
   mediaHeightClass = 'h-56',
-  mediaPlaceholderClass = 'bg-secondaryLight1',
+  mediaBG = 'bg-secondaryLight1',
+  itemsPosition = '',
   className,
+  imageWidthClass = 'max-w-[500px]',
   ctaVariant = 'minimal',
   contentJustifyBetween = false,
+  bottomOverlayHeightClass = 'h-16',
+  position = 'translate-y-0'
+
 } = Astro.props as Props;
 ---
 
-<article class:list={["border border-gray-200 overflow-hidden h-full flex flex-col", className]}>
+<article class:list={["group border border-gray-200 overflow-hidden h-full flex flex-col", className]}>
   {showMedia && (
     <slot name="media">
       {image ? (
-        <img src={image} alt={title} class={"w-full object-cover " + mediaHeightClass} />
+        <div class:list={[mediaHeightClass, mediaBG, itemsPosition, "relative overflow-hidden"]}>
+
+          <img src={image} alt={title} class:list={[imageWidthClass, position,"w-full object-cover grayscale transition-[filter,transform] duration-300 group-hover:grayscale-0 group-hover:scale-[1.02] ease-out-circ"]} />
+          <div class:list={["pointer-events-none absolute inset-x-0 bottom-0 z-10", bottomOverlayHeightClass]}
+          style="backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);"></div>
+        </div>
+
       ) : (
-        <div class:list={[mediaHeightClass, mediaPlaceholderClass]}></div>
+        <div class:list={[mediaHeightClass, mediaBG, "relative"]}>
+           <div class:list={["pointer-events-none absolute inset-x-0 bottom-0 z-10", bottomOverlayHeightClass]}
+      style="backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);"></div>
+        </div>
       )}
+
     </slot>
   )}
   <div class:list={["p-6 flex-1 flex flex-col", contentJustifyBetween && "justify-between"]}>
@@ -47,6 +68,7 @@ const {
     </div>
     <Button href={href} variant={ctaVariant} showArrow className="mt-8">{ctaText}</Button>
   </div>
+
   
 </article>
 

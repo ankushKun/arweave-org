@@ -21,6 +21,8 @@
     "@phosphor-icons/web": "2.1.2",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "@wanderapp/connect": "^0.1.11",
+    "arweave": "^1.15.7",
     "astro": "^5.12.3",
     "http-server": "^14.1.1",
     "permaweb-deploy": "^2.5.0",

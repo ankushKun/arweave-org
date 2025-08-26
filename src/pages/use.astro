@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import WanderAuth from "../components/WanderAuth";
+import WalletModal from "../components/WalletModal.astro";
 import ScrollToTop from "../components/ScrollToTop.astro";
 import FooterAlt from "../components/Footer-Alt.astro";
 import Button from "../components/Button.astro";
@@ -7,6 +9,8 @@ import Card from "../components/Card.astro";
 ---
 
 <Layout title="Use Arweave">
+  {/* React widget to manage WanderConnect */}
+  <WanderAuth client:load />
   <section class="h-[calc(100vh-103px-32px)] flex flex-col pb-12" id="use" aria-label="Use Arweave">
 
       <!-- Kicker -->
@@ -51,6 +55,10 @@ import Card from "../components/Card.astro";
               or <button type="button" class="underline group-hover:text-orange group-active:scale-95 transition-transform duration-150 ease" id="choose-file-btn">choose file</button> to upload
             </div>
             <div id="selected-file-name" class="mt-2 text-p3"></div>
+            <div class="mt-4 flex items-center justify-center">
+              <div id="upload-spinner" class="hidden h-10 w-10 rounded-full border-2 border-gray-300 border-t-black animate-spin"></div>
+            </div>
+            <div id="selected-file-error" class="mt-2 text-sm text-red-600 hidden"></div>
             <input id="file-input" type="file" class="hidden" />
           </div>
         </div>
@@ -69,7 +77,7 @@ import Card from "../components/Card.astro";
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div class="mt-4 text-p3">File Uploaded</div>
+            <div id="status-el" class="mt-4 text-p3">File Uploaded</div>
 
             <a id="view-link" href="#" target="_blank" rel="noopener" class="mt-6 inline-block text-orange underline font-mono">View your file on Arweave</a>
 
@@ -86,10 +94,12 @@ import Card from "../components/Card.astro";
         </div>
       </div>
 
+      <WalletModal />
+
 </section>
     <!-- Next Section: Tutorial and Resources -->
 
-    <section class="pb-12 mt-20" id="resources" aria-label="Use Arweave: Examples">
+    <section class="relative pb-12 mt-20" id="resources" aria-label="Use Arweave: Examples">
        <!-- Kicker -->
        <div class="text-kicker lg:text-[16px] font-mono">Use Arweave.</div>
 
@@ -122,6 +132,8 @@ import Card from "../components/Card.astro";
         </div>
       </div>
 
+      <!-- Remove global overlay; use per-card overlay instead -->
+
       <!-- Resource cards grid -->
       <div class="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card
@@ -129,6 +141,10 @@ import Card from "../components/Card.astro";
           description="Dive deep into the culture and news on Arweave."
           href="#"
           ctaText="Read Permaweb Journal"
+          showBottomOverlay
+          image="https://arweave.net/P5rMc0lbcUFqR9svc9i-69lJ30q85sJjeCVNMuJKS6U"
+          itemsPosition="flex items-end justify-center"
+          position="translate-y-8"
         />
 
         <Card
@@ -136,6 +152,11 @@ import Card from "../components/Card.astro";
           description="Pay once, store forever with Arweave's permanent data storage."
           href="#"
           ctaText="Store on ArDrive"
+          showBottomOverlay
+          itemsPosition="flex items-end justify-center"
+          image="https://arweave.net/Aa5ZIvY8q9hHVFzeiSR06eDH71PMqhPmNVSUtXrvX8k"
+          imageWidthClass="max-w-[400px]"
+          position="translate-y-24"
         />
 
         <Card
@@ -143,6 +164,10 @@ import Card from "../components/Card.astro";
           description="Choose an Arweave wallet that suits your device compatibility and personal preferences."
           href="#"
           ctaText="Choose Your Wallet"
+          showBottomOverlay
+          image="https://arweave.net/KYxXmKf35Qdu4xoBDXuFqR9UnsTcNe8m2cuvl5Y0BRU"
+          itemsPosition="flex items-center justify-center"
+          imageWidthClass="max-w-[400px]"
         />
 
         <Card
@@ -150,6 +175,12 @@ import Card from "../components/Card.astro";
           description="Create and deploy smart contracts that leverage its decentralized storage capabilities."
           href="#"
           ctaText="Develop on AO"
+          showBottomOverlay
+          image="https://arweave.net/O92ZbziDRxqq4mDqEDxNpC4P3wuRCgpWYQuh2zxgzXM"
+          itemsPosition="flex items-end justify-center"
+          position="translate-y-6"
+          imageWidthClass="max-w-[400px]"
+
         />
       </div>
 
@@ -159,6 +190,21 @@ import Card from "../components/Card.astro";
       document.addEventListener('DOMContentLoaded', () => {
         const tabs = document.querySelectorAll('[data-step-tab]');
         const panels = document.querySelectorAll('[data-step-panel]');
+        const step2Btn = document.querySelector('[data-step-tab="2"]');
+        (window as any).__txReady = false;
+
+        function setStep2Enabled(enabled) {
+          if (!step2Btn) return;
+          const el = step2Btn as HTMLElement;
+          if (enabled) {
+            el.classList.remove('opacity-50','cursor-not-allowed','pointer-events-none');
+            el.setAttribute('aria-disabled','false');
+          } else {
+            el.classList.add('opacity-50','cursor-not-allowed','pointer-events-none');
+            el.setAttribute('aria-disabled','true');
+          }
+        }
+        setStep2Enabled(false);
 
         function setActive(step) {
           tabs.forEach((t) => {
@@ -180,7 +226,14 @@ import Card from "../components/Card.astro";
         }
 
         tabs.forEach((t) =>
-          t.addEventListener('click', () => setActive(t.getAttribute('data-step-tab')))
+          t.addEventListener('click', (e) => {
+            const targetStep = t.getAttribute('data-step-tab');
+            if (targetStep === '2' && !(window as any).__txReady) {
+              e.preventDefault();
+              return;
+            }
+            setActive(targetStep);
+          })
         );
 
         // File interactions
@@ -189,28 +242,45 @@ import Card from "../components/Card.astro";
         const chooseBtn = document.getElementById('choose-file-btn');
         const nameEl = document.getElementById('selected-file-name');
 
-        function randomId(len = 43) {
-          const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_' ;
-          let out = '';
-          for (let i = 0; i < len; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
-          return out;
-        }
 
-        function setName(file) {
+
+        async function setName(file) {
           if (!file) return;
+          const errEl = document.getElementById('selected-file-error');
+          const overLimit = file.size > 100 * 1024; // 100KB
+          console.log('[Use] File selected:', { name: file.name, size: file.size, type: file.type, overLimit });
+          if (errEl) {
+            if (overLimit) {
+              errEl.textContent = 'File must be under 100KB.';
+              errEl.classList.remove('hidden');
+            } else {
+              errEl.textContent = '';
+              errEl.classList.add('hidden');
+            }
+          }
+          (window as any).__fileOk = !overLimit;
+          if (overLimit) {
+            return; // too large; do not proceed or open modal
+          }
           if (nameEl) nameEl.textContent = file.name;
+          // Save selected file globally for the auth/upload flow
+          (window as any).__selectedFile = file;
           // Populate Step 2 details
-          const tx = randomId();
           const linkEl = document.getElementById('view-link');
           const addr = document.getElementById('address-el');
           const sizeEl = document.getElementById('size-el');
           const typeEl = document.getElementById('type-el');
-          if (linkEl) linkEl.setAttribute('href', `https://arweave.net/${tx}`);
-          if (addr) addr.textContent = tx;
+          const statusEl = document.getElementById('status-el');
+          const spinnerEl = document.getElementById('upload-spinner');
+          const checkEl = document.getElementById('uploaded-check');
+          if (linkEl) linkEl.setAttribute('href', `#`);
+          if (addr) addr.textContent = '—';
           if (sizeEl) sizeEl.textContent = `${Math.round(file.size / 1024)}kb`;
           if (typeEl) typeEl.textContent = (file.type?.split('/')[1] || file.name.split('.').pop() || 'unknown');
-          // Switch to Step 2 automatically
-          setActive('2');
+          if (statusEl) statusEl.textContent = 'Ready to upload';
+          if (spinnerEl) spinnerEl.classList.add('hidden');
+          if (checkEl) checkEl.classList.remove('hidden');
+          // Do NOT switch to Step 2 yet; wait for successful transaction
         }
 
         if (dz && finputEl) {
@@ -236,6 +306,13 @@ import Card from "../components/Card.astro";
           }
         }
 
+        // Callback invoked by WanderAuth when tx is successful
+        (window as any).__onTxSuccess = () => {
+          (window as any).__txReady = true;
+          setStep2Enabled(true);
+          setActive('2');
+        };
+
         // Initialize to Step 1
         setActive('1');
         const step1 = document.querySelector('[data-step-panel="1"]');
@@ -243,6 +320,64 @@ import Card from "../components/Card.astro";
           step1.classList.add('flex', 'flex-col', 'h-full');
         }
       });
+    </script>
+    <script>
+      // @ts-nocheck
+      ;(function () {
+        // Modal elements
+        const modal = document.getElementById('wallet-modal');
+        const btnPrimary = document.getElementById('btn-wanderconnect');
+        const btnCancel = document.getElementById('wallet-modal-cancel');
+        const backdrop = document.getElementById('wallet-modal-backdrop');
+
+        function openModal() {
+          if (!modal) return;
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          // Focus primary for accessibility
+          setTimeout(() => btnPrimary?.focus(), 0);
+          document.addEventListener('keydown', onKeydown);
+        }
+
+        function closeModal() {
+          if (!modal) return;
+          modal.classList.remove('flex');
+          modal.classList.add('hidden');
+          document.removeEventListener('keydown', onKeydown);
+        }
+
+        function onKeydown(e) {
+          if (e.key === 'Escape') closeModal();
+        }
+
+        // Hook into existing file selection pipeline:
+        const finputEl = document.getElementById('file-input');
+
+        // Patch change/drop listeners to open the modal after setName runs.
+        const dz = document.getElementById('dropzone');
+        function afterSetName() {
+          openModal();
+        }
+
+        if (dz) {
+          dz.addEventListener('drop', () => setTimeout(afterSetName, 0));
+          dz.addEventListener('click', () => {
+            // clicking dropzone triggers file picker; change event will handle modal
+          });
+        }
+        if (finputEl instanceof HTMLInputElement) {
+          finputEl.addEventListener('change', () => setTimeout(afterSetName, 0));
+        }
+
+        // Wire modal buttons
+        btnCancel?.addEventListener('click', closeModal);
+        backdrop?.addEventListener('click', closeModal);
+
+        // WanderConnect action - delegate to React helper
+        btnPrimary?.addEventListener('click', async () => {
+          (window as any).__wanderConnectAndUpload?.();
+        });
+      })();
     </script>
   </section>
   <FooterAlt />
