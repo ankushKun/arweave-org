@@ -45,7 +45,7 @@ import Card from "../components/Card.astro";
           </p>
 
           <!-- Dropzone -->
-          <div id="dropzone" class="group mt-8  w-full border-2 border-dashed border-black h-full items-center justify-center text-center cursor-pointer hover:border-orange transition-colors duration-150 ease flex flex-col">
+          <div id="dropzone" class="group mt-8  w-full border-2 border-dashed border-black h-full items-center justify-center text-center cursor-pointer hover:border-orange transition duration-200 ease-out-cubic flex flex-col transform will-change-transform">
             <div class="text-orange p-8 border-dashed border-2 border-black transition-colors duration-150 ease group-hover:border-orange">
               <img src="/src/images/icons/store-icon.svg" alt="Upload" class="w-16 h-16 inline-block align-middle" />
             </div>
@@ -110,25 +110,32 @@ import Card from "../components/Card.astro";
        <p class="text-p1 lg:text-[14px] font-sans mt-3 max-w-4xl">
         Unlike traditional blockchains built for transactions, Arweave’s novel blockweave protocol was designed from the ground up as the web’s permanent data layer. With a single upfront fee, you can store data indefinitely that is tamper‑proof, censorship‑resistant, and always accessible. Below are some ways to dive in.       </p>
       <!-- Upload Tutorial card -->
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.css" />
       <div class="border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 mt-10 h-60 md:h-80">
         <div class="max-w-2xl h-full flex flex-col justify-between">
           <div>
-            <h3 class="text-h3 font-sans lg:text-[32px]">Upload Tutorial.</h3>
+            <h3 class="text-h3 font-sans lg:text-[32px]">Use Cases.</h3>
             <p class="text-p3 font-sans mt-2">
-              You can upload your file for free and access it immediately after.
+              From preserving humanity’s digital record to powering the bleeding edge foundation of AI.
             </p>
           </div>
           <div>
-            <Button href="#use" variant="secondary" showArrow>
-              Start Storing Files
+            <Button href="https://ar.io/https://ar.io/decentralized-ai" variant="secondary" showArrow>
+              Start To Explore.
             </Button>
           </div>
         </div>
-        <!-- Right-side placeholder visuals -->
+        <!-- Right-side visuals: Phosphor icons for Arweave use cases -->
         <div class="flex items-center gap-6 ml-auto">
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200"></div>
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200"></div>
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200"></div>
+          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
+            <i class="ph ph-cloud-arrow-up text-3xl"></i>
+          </div>
+          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
+            <i class="ph ph-shield-check text-3xl"></i>
+          </div>
+          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
+            <i class="ph ph-brain text-3xl"></i>
+          </div>
         </div>
       </div>
 
@@ -139,8 +146,8 @@ import Card from "../components/Card.astro";
         <Card
           title="Read About Arweave."
           description="Dive deep into the culture and news on Arweave."
-          href="#"
-          ctaText="Read Permaweb Journal"
+          href="https://permaweb-journal.arweave.net/"
+          ctaText="Read Permaweb Journal."
           showBottomOverlay
           image="https://arweave.net/P5rMc0lbcUFqR9svc9i-69lJ30q85sJjeCVNMuJKS6U"
           itemsPosition="flex items-end justify-center"
@@ -150,8 +157,8 @@ import Card from "../components/Card.astro";
         <Card
           title="Permanent Cloud Storage."
           description="Pay once, store forever with Arweave's permanent data storage."
-          href="#"
-          ctaText="Store on ArDrive"
+          href="https://ardrive.io"
+          ctaText="Store on ArDrive."
           showBottomOverlay
           itemsPosition="flex items-end justify-center"
           image="https://arweave.net/Aa5ZIvY8q9hHVFzeiSR06eDH71PMqhPmNVSUtXrvX8k"
@@ -163,7 +170,7 @@ import Card from "../components/Card.astro";
           title="Get Wallet."
           description="Choose an Arweave wallet that suits your device compatibility and personal preferences."
           href="#"
-          ctaText="Choose Your Wallet"
+          ctaText="Choose Your Wallet."
           showBottomOverlay
           image="https://arweave.net/KYxXmKf35Qdu4xoBDXuFqR9UnsTcNe8m2cuvl5Y0BRU"
           itemsPosition="flex items-center justify-center"
@@ -174,7 +181,7 @@ import Card from "../components/Card.astro";
           title="Smart Contracts."
           description="Create and deploy smart contracts that leverage its decentralized storage capabilities."
           href="#"
-          ctaText="Develop on AO"
+          ctaText="Develop on AO."
           showBottomOverlay
           image="https://arweave.net/O92ZbziDRxqq4mDqEDxNpC4P3wuRCgpWYQuh2zxgzXM"
           itemsPosition="flex items-end justify-center"
@@ -292,13 +299,28 @@ import Card from "../components/Card.astro";
           dz.addEventListener('drop', (e) => {
             e.preventDefault();
             dz.classList.remove('border-orange');
+            // Scale down briefly then back to normal on drop
+            dz.classList.add('scale-[0.99]');
+            setTimeout(() => {
+              dz.classList.remove('scale-[0.99]');
+            }, 120);
             const file = e.dataTransfer?.files?.[0];
             if (file) setName(file);
           });
           dz.addEventListener('click', () => {
+            // Scale down briefly then back to normal on click
+            dz.classList.add('scale-[0.99]');
+            setTimeout(() => {
+              dz.classList.remove('scale-[0.99]');
+            }, 120);
             if (finputEl instanceof HTMLInputElement) finputEl.click();
           });
           if (chooseBtn) chooseBtn.addEventListener('click', () => {
+            // Mirror the same click animation on the dropzone when using the button
+            dz?.classList.add('scale-[0.99]');
+            setTimeout(() => {
+              dz?.classList.remove('scale-[0.99]');
+            }, 120);
             if (finputEl instanceof HTMLInputElement) finputEl.click();
           });
           if (finputEl instanceof HTMLInputElement) {

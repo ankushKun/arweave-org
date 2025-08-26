@@ -47,7 +47,7 @@ const {
       {image ? (
         <div class:list={[mediaHeightClass, mediaBG, itemsPosition, "relative overflow-hidden"]}>
 
-          <img src={image} alt={title} class:list={[imageWidthClass, position,"w-full object-cover grayscale transition-[filter,transform] duration-300 group-hover:grayscale-0 group-hover:scale-[1.02] ease-out-circ"]} />
+          <img src={image} alt={title} class:list={[imageWidthClass, position,"w-full object-cover grayscale transition-[filter,transform,opacity] opacity-80 duration-300 group-hover:grayscale-0 group-hover:scale-[1.02] group-hover:opacity-100 ease-out-circ"]} />
           <div class:list={["pointer-events-none absolute inset-x-0 bottom-0 z-10", bottomOverlayHeightClass]}
           style="backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);"></div>
         </div>
