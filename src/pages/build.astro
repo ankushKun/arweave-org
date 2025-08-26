@@ -7,7 +7,7 @@ import Card from "../components/Card.astro";
 ---
 
 <Layout title="Build on Arweave">
-  <section class="relative z-10" id="build" aria-label="Build on Arweave" class="pb-12">
+  <section class="relative z-10 min-h-[calc(100vh-200px)]" id="build" aria-label="Build on Arweave" class="pb-12">
 
       <!-- Kicker -->
       <div class="text-kicker lg:text-[16px] font-mono">Build Arweave.</div>
@@ -27,29 +27,77 @@ import Card from "../components/Card.astro";
         <div class="flex flex-col gap-10">
           <!-- Step 1 -->
           <section>
-            <h3 class="text-h4 font-sans">Step 1: Upload your code.</h3>
-            <p class="text-p3 font-sans mt-2">You can upload your code to the right. Make sure it's under 100kb to deploy free.</p>
-            <p class="text-p3 font-sans mt-2">If over please connect wallet.</p>
-            <p class="text-p3 font-sans mt-2">If you don't have a wallet here's a link.</p>
+            <div class="group relative border border-gray-200 bg-white/60 p-5 transition-shadow duration-200 ease-out-cubic hover:shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="h-6 w-6 bg-black text-white flex items-center justify-center text-[11px] font-mono">1</div>
+                <h3 class="text-h4 text-[24px]">Upload your code</h3>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Drag and drop your code file to the right.</p></div>
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Files under 100 KB can be deployed for free.</p></div>
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">If your file is larger, you’ll need to connect your wallet.</p></div>
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Don’t have a wallet? <a href="#" class="underline">Set one up here</a>.</p></div>
+              </div>
+            </div>
           </section>
 
           <!-- Step 2 -->
           <section>
-            <h3 class="text-h4">Step 2: Wait to process.</h3>
-            <p class="text-p3 font-sans mt-2">Waiting for it to be uploaded to the permaweb..</p>
+            <div class="group relative border border-gray-200 bg-white/60 p-5 transition-shadow duration-200 ease-out-cubic hover:shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="h-6 w-6 bg-black text-white flex items-center justify-center text-[11px] font-mono">2</div>
+                <h3 class="text-h4 text-[24px]">Confirm upload</h3>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Once uploaded, your code will be queued for processing.</p></div>
+              </div>
+            </div>
           </section>
 
           <!-- Step 3 -->
           <section>
-            <h3 class="text-h4">Step 3: Visit and access your app.</h3>
-            <p class="text-p3 font-sans mt-2">Your app is permanently accesible onchain via Arweave.</p>
+            <div class="group relative border border-gray-200 bg-white/60 p-5 transition-shadow duration-200 ease-out-cubic hover:shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="h-6 w-6 bg-black text-white flex items-center justify-center text-[11px] font-mono">3</div>
+                <h3 class="text-h4 text-[24px]">Processing</h3>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">The system will handle deployment and prepare your app on the permaweb.</p></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 4 -->
+          <section>
+            <div class="group relative border border-gray-200 bg-white/60 p-5 transition-shadow duration-200 ease-out-cubic hover:shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="h-6 w-6 bg-black text-white flex items-center justify-center text-[11px] font-mono">4</div>
+                <h3 class="text-h4 text-[24px]">Deployment complete</h3>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">After processing, your app will be permanently stored on Arweave.</p></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 5 -->
+          <section>
+            <div class="group relative border border-gray-200 bg-white/60 p-5 transition-shadow duration-200 ease-out-cubic hover:shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="h-6 w-6 bg-black text-white flex items-center justify-center text-[11px] font-mono">5</div>
+                <h3 class="text-h4 text-[24px]">Access your app</h3>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Your app is now live and permanently accessible on-chain via Arweave.</p></div>
+              </div>
+            </div>
           </section>
         </div>
 
         <!-- Right sidebar: dropzone mock (fixed ~350px) -->
-        <aside class="w-full lg:w-[350px] max-w-full border border-gray-200 p-6 justify-self-end">
+        <aside class="w-full lg:w-[350px] max-w-full border border-gray-200 p-6 justify-self-end sticky top-6 self-start">
           <div class="grid grid-cols-2 items-end border-b border-gray-200">
-            <div class="text-left font-mono text-[12px] tracking-[0.08em] py-2 border-b-2 border-orange text-orange">Host</div>
+            <div class="text-left font-mono text-[12px] tracking-[0.08em] py-2 border-b border-black">Host</div>
             <div class="text-left font-mono text-[12px] tracking-[0.08em] py-2 text-secondaryLight2">Visit</div>
           </div>
           <div class="mt-6 h-56 border-2 border-dashed border-gray-300 flex items-center justify-center text-center">
@@ -75,19 +123,50 @@ import Card from "../components/Card.astro";
 
       <!-- Cards grid: 4+1 layout on large screens -->
       <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
         <Card
-          className="lg:col-span-2 lg:row-span-2 min-h-[300px]"
-          showMedia={false}
+          className="group lg:col-span-2 lg:row-span-2 min-h-[250px]"
+          showMedia={true}
+          mediaHeightClass="h-0"
+          mediaBG="bg-transparent"
+          relativeParent={true}
+          tag="Docs"
           title="Get Started Developing."
           description="Your application remains accessible to everyone, forever, without the risk of censorship or removal. Visit the permaweb cookbook to start."
           href="#"
           ctaText="Visit the Permaweb Cookbook"
           ctaVariant="secondary"
           contentJustifyBetween={true}
-        />
+        >
+          <div slot="media" class="absolute right-2 bottom-2 sm:right-4 sm:bottom-4 md:-right-4 md:-bottom-4 lg:-right-8 lg:-bottom-8">
+            <!-- Absolute, behind content -->
+            <div class="pointer-events-none inset-0 z-0">
+              <!-- Icon constellation anchored bottom-right -->
+              <div class="w-56 h-56 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
+                <style>
+                  @keyframes orbit-slow { to { transform: rotate(360deg); } }
+                  .orbit-rotate { animation: orbit-slow 90s linear infinite; transform-origin: center; }
+                </style>
+                <!-- Center book -->
+                <img src="/src/images/icons/permaweb-book.svg" alt="Permaweb Book" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-24 sm:h-28 md:h-36 lg:h-44 w-auto" />
+                <!-- Circle icons (no backgrounds), rotating slowly while staying upright -->
+                <div class="absolute inset-0 orbit-rotate">
+                  <i class="ph ph-code-block absolute left-1/2 -translate-x-1/2 top-0 text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-screwdriver absolute right-0 top-1/2 -translate-y-1/2 text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-25 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-cpu absolute left-1/2 -translate-x-1/2 bottom-0 text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-50 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-hammer absolute left-0 top-1/2 -translate-y-1/2 text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-75 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-polygon absolute left-[12%] top-[12%] text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-100 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-compass-tool absolute right-[12%] top-[12%] text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-125 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-blueprint absolute left-[12%] bottom-[12%] text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-150 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                  <i class="ph ph-wrench absolute right-[12%] bottom-[12%] text-xl sm:text-2xl md:text-3xl transform scale-[0.9] opacity-80 transition-[transform,opacity] duration-100 ease-out-cubic delay-175 group-hover:scale-100 group-hover:opacity-100" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         <Card
-          className="lg:col-start-3 min-h-[300px]"
+          className="lg:col-start-3 min-h-[250px]"
           showMedia={false}
           title="Dev Utility Tools."
           description="Build with ar.io’s comprehensive suite of developer utility tools."
@@ -97,7 +176,7 @@ import Card from "../components/Card.astro";
         />
 
         <Card
-          className="lg:col-start-3 min-h-[300px]"
+          className="lg:col-start-3 min-h-[250px]"
           showMedia={false}
           title="View Arweave History."
           description="Blocks, accounts, transactions, protocols, and tokens."
@@ -110,7 +189,8 @@ import Card from "../components/Card.astro";
   </section>
 
   <!-- Decentralized Compute section -->
-  <section class="mt-6 p-6 border border-gray-200 bg-[#FCFCFC]" aria-label="Decentralized Compute">
+  <section class="relative mt-6 p-6 border border-gray-200 bg-[#FCFCFC]" aria-label="Decentralized Compute">
+    <span class="absolute top-6 right-6 z-[1] inline-flex items-center rounded px-2 py-0.5 border border-gray-300 bg-white text-xxs font-mono tracking-wide">Computation with Data</span>
 
       <!-- Headline -->
       <h2 class="text-h3 font-sans ">Decentralized Compute.</h2>
@@ -120,9 +200,10 @@ import Card from "../components/Card.astro";
 
       <div class="mt-24 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- AO Card -->
-        <article class="border border-gray-200 p-6 flex bg-white flex-col justify-between min-h-[300px]">
+        <article class="relative border border-gray-200 p-6 flex bg-white flex-col justify-between min-h-[300px]">
+          <span class="absolute top-6 right-6 z-[1] inline-flex items-center rounded px-2 py-0.5 border border-gray-300 bg-white text-xxs font-mono tracking-wide">Smart Contracts</span>
           <div>
-            <img src="/src/images/logos/AO-logo-1.svg" alt="AO" class="h-6 w-auto mb-4" />
+            <img src="/src/images/logos/AO-logo-1.svg" alt="AO" class="h-5 w-auto mb-4" />
             <p class="text-p3 font-sans">
               Create and deploy processes (smart contracts) on Arweave.
             </p>
@@ -133,12 +214,12 @@ import Card from "../components/Card.astro";
         </article>
 
         <!-- Hyperbeam Card -->
-        <article class="border border-gray-200 bg-white p-6 flex flex-col justify-between min-h-[300px]">
+        <article class="relative border border-gray-200 bg-white p-6 flex flex-col justify-between min-h-[300px]">
+          <span class="absolute top-6 right-6 z-[1] inline-flex items-center rounded px-2 py-0.5 border border-gray-300 bg-white text-xxs font-mono tracking-wide">OS</span>
           <div>
-            <img src="/src/images/logos/hyperbeam-logo-1.svg" alt="Hyperbeam" class="h-6 w-auto mb-4" />
+            <img src="/src/images/logos/hyperbeam-logo-1.svg" alt="Hyperbeam" class="h-5 w-auto mb-4" />
             <p class="text-p3 font-sans">
-              Bringing web2 capabilities to the permaweb.
-            </p>
+Decentralized operating system on the permaweb.            </p>
           </div>
           <div class="mt-6">
             <Button href="#" variant="secondary" fullWidth showArrow>Start Hyperbeam</Button>

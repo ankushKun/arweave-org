@@ -110,33 +110,39 @@ import Card from "../components/Card.astro";
        <p class="text-p1 lg:text-[14px] font-sans mt-3 max-w-4xl">
         Unlike traditional blockchains built for transactions, Arweave’s novel blockweave protocol was designed from the ground up as the web’s permanent data layer. With a single upfront fee, you can store data indefinitely that is tamper‑proof, censorship‑resistant, and always accessible. Below are some ways to dive in.       </p>
       <!-- Upload Tutorial card -->
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/phosphor-icons@1.4.2/src/css/icons.css" />
-      <div class="border border-gray-200 p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 mt-10 h-60 md:h-80">
-        <div class="max-w-2xl h-full flex flex-col justify-between">
-          <div>
-            <h3 class="text-h3 font-sans lg:text-[32px]">Use Cases.</h3>
-            <p class="text-p3 font-sans mt-2">
-              From preserving humanity’s digital record to powering the bleeding edge foundation of AI.
-            </p>
+      <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+      <div class="group border border-gray-200  flex flex-col md:flex-row md:items-center md:justify-between mt-10 h-60 md:h-80">
+        <div class="flex w-full h-full gap-6">
+          <div class="flex w-full h-full">
+            <div class="h-full flex flex-col justify-between w-full pl-6 pt-6 pb-6 md:pl-8 md:pt-8 md:pb-8">
+              <div>
+                <h3 class="text-h3 font-sans lg:text-[32px]">Use Cases.</h3>
+                <p class="text-p3 font-sans mt-2">
+                  From preserving humanity’s digital record to powering the bleeding edge foundation of AI. Visit Ar.io's list of various use cases.
+                </p>
+              </div>
+              <div>
+                <Button href="https://ar.io/decentralized-ai" variant="secondary" showArrow>
+                  Start To Explore.
+                </Button>
+              </div>
+            </div>
           </div>
-          <div>
-            <Button href="https://ar.io/https://ar.io/decentralized-ai" variant="secondary" showArrow>
-              Start To Explore.
-            </Button>
-          </div>
+          <div class=" relative flex items-center justify-center bg-secondaryLight1 w-full h-full overflow-hidden">
+            <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center transform scale-[0.95] opacity-80 transition-[transform,opacity] duration-150 ease-out-cubic group-hover:scale-100 group-hover:opacity-100">
+              <i class="ph ph-book text-3xl" aria-label="Historical records"></i>
+            </div>
+            <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center transform scale-[0.95] opacity-80 transition-[transform,opacity] duration-200 ease-out-cubic group-hover:scale-100 group-hover:opacity-100 delay-75">
+              <i class="ph ph-archive text-3xl" aria-label="Archive forever"></i>
+            </div>
+            <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center transform scale-[0.95] opacity-80 transition-[transform,opacity] duration-200 ease-out-cubic group-hover:scale-100 group-hover:opacity-100 delay-150">
+              <i class="ph ph-clock-counter-clockwise text-3xl" aria-label="Timeproof records"></i>
+            </div>
+            <div class:list={["pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24"]}
+            style="backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px); background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);"></div>          </div>
         </div>
         <!-- Right-side visuals: Phosphor icons for Arweave use cases -->
-        <div class="flex items-center gap-6 ml-auto">
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
-            <i class="ph ph-cloud-arrow-up text-3xl"></i>
-          </div>
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
-            <i class="ph ph-shield-check text-3xl"></i>
-          </div>
-          <div class="h-12 w-12 bg-gray-100 border border-gray-200 flex items-center justify-center">
-            <i class="ph ph-brain text-3xl"></i>
-          </div>
-        </div>
+      
       </div>
 
       <!-- Remove global overlay; use per-card overlay instead -->
@@ -354,8 +360,16 @@ import Card from "../components/Card.astro";
 
         function openModal() {
           if (!modal) return;
-          modal.classList.remove('hidden');
           modal.classList.add('flex');
+          modal.classList.remove('hidden');
+          // animate in
+          modal.classList.remove('pointer-events-none');
+          modal.style.opacity = '1';
+          const panel = modal.querySelector('[role="dialog"]');
+          const backdrop = document.getElementById('wallet-modal-backdrop');
+          panel && (panel as HTMLElement).classList.remove('scale-95');
+          panel && (panel as HTMLElement).classList.add('scale-100');
+          backdrop && (backdrop as HTMLElement).classList.add('opacity-100');
           // Focus primary for accessibility
           setTimeout(() => btnPrimary?.focus(), 0);
           document.addEventListener('keydown', onKeydown);
@@ -363,8 +377,18 @@ import Card from "../components/Card.astro";
 
         function closeModal() {
           if (!modal) return;
-          modal.classList.remove('flex');
-          modal.classList.add('hidden');
+          // animate out
+          const panel = modal.querySelector('[role="dialog"]');
+          const backdrop = document.getElementById('wallet-modal-backdrop');
+          panel && (panel as HTMLElement).classList.remove('scale-100');
+          panel && (panel as HTMLElement).classList.add('scale-95');
+          backdrop && (backdrop as HTMLElement).classList.remove('opacity-100');
+          modal.style.opacity = '0';
+          modal.classList.add('pointer-events-none');
+          setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+          }, 200);
           document.removeEventListener('keydown', onKeydown);
         }
 
@@ -378,6 +402,7 @@ import Card from "../components/Card.astro";
         // Patch change/drop listeners to open the modal after setName runs.
         const dz = document.getElementById('dropzone');
         function afterSetName() {
+          if (!(window as any).__fileOk) return;
           openModal();
         }
 
@@ -391,18 +416,42 @@ import Card from "../components/Card.astro";
           finputEl.addEventListener('change', () => setTimeout(afterSetName, 0));
         }
 
-        // Wire modal buttons
+        // Wire modal buttons - all actions close the modal with animation
         btnCancel?.addEventListener('click', closeModal);
         backdrop?.addEventListener('click', closeModal);
+        // Close on any link/button inside the modal as well
+        const modalClickables = modal?.querySelectorAll('a, button');
+        modalClickables?.forEach((el) => {
+          el.addEventListener('click', () => {
+            // Allow default navigation/handlers to proceed; just animate out modal
+            closeModal();
+          }, { capture: true });
+        });
 
         // WanderConnect action - delegate to React helper
         btnPrimary?.addEventListener('click', async () => {
-          (window as any).__wanderConnectAndUpload?.();
+          // Close modal first for consistent UX, then continue
+          closeModal();
+          setTimeout(() => (window as any).__wanderConnectAndUpload?.(), 0);
+        });
+
+        // Beacon integration via AO-Sync (if available in page)
+        const beaconBtn = document.getElementById('btn-beacon');
+        beaconBtn?.addEventListener('click', async (e) => {
+          e.preventDefault();
+          try {
+            closeModal();
+            // Expect an app-level helper to exist when AO-Sync is installed, similar to Wander flow
+            // This should call connect() from @vela-ventures/aosync-sdk-react useWallet, then continue upload
+            (window as any).__beaconConnectAndUpload?.();
+          } catch (err) {
+            console.error('[WalletModal] Beacon connect failed', err);
+          }
         });
       })();
     </script>
   </section>
   <FooterAlt />
 
-  <ScrollToTop threshold={800} />
+  <ScrollToTop threshold={800} higher={true} />
 </Layout>

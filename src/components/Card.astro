@@ -19,6 +19,8 @@ interface Props {
   showBottomOverlay?: boolean;
   bottomOverlayHeightClass?: string; 
   position?: string;
+  relativeParent?: boolean; // make the top-level wrapper position: relative
+  tag?: string; // optional top-right tag label
 }
 
 const {
@@ -36,12 +38,19 @@ const {
   ctaVariant = 'minimal',
   contentJustifyBetween = false,
   bottomOverlayHeightClass = 'h-16',
-  position = 'translate-y-0'
+  position = 'translate-y-0',
+  relativeParent = false,
+  tag
 
 } = Astro.props as Props;
 ---
 
-<article class:list={["group border border-gray-200 overflow-hidden h-full flex flex-col", className]}>
+<article class:list={["group border border-gray-200 overflow-hidden h-full flex flex-col", (relativeParent || typeof tag === 'string') && 'relative', className]}>
+  {typeof tag === 'string' && (
+    <span class="absolute top-6 right-6 z-[1] inline-flex items-center px-2 py-0.5 border border-gray-300 bg-white text-xxs font-mono tracking-wide">
+      {tag}
+    </span>
+  )}
   {showMedia && (
     <slot name="media">
       {image ? (

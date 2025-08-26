@@ -25,29 +25,70 @@ const {
   (function initTooltip() {
     const SEL = { selector, text, attr, delay, fadeMs, followMouse, rootSelector };
 
+    // Singleton state to prevent stuck tooltips
+    let activeTipEl = null;
+    let activeMoveHandler = null;
+    let activeHostEl = null;
+    let showTimer = null;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let globalDismissBound = false;
+
     function resolveText(el) {
       if (SEL.text) return SEL.text;
       if (SEL.attr) return el.getAttribute(SEL.attr) || '';
       return el.getAttribute('data-tooltip') || el.getAttribute('title') || '';
     }
 
+    function removeActiveTip() {
+      if (showTimer) { clearTimeout(showTimer); showTimer = null; }
+      if (!activeTipEl) return;
+      const tip = activeTipEl;
+      activeTipEl = null;
+      tip.style.opacity = '0';
+      setTimeout(() => { tip?.remove(); }, SEL.fadeMs);
+      if (activeHostEl && activeMoveHandler) {
+        activeHostEl.removeEventListener('mousemove', activeMoveHandler);
+      }
+      activeHostEl = null;
+      activeMoveHandler = null;
+    }
+
+    function bindGlobalDismissOnce() {
+      if (globalDismissBound) return;
+      globalDismissBound = true;
+      const dismiss = () => removeActiveTip();
+      ['pointerdown','scroll','resize','visibilitychange'].forEach(evt => document.addEventListener(evt, dismiss, { passive: true }));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dismiss(); });
+    }
+
     function attach(el) {
       if (!el || el.dataset.tooltipBound) return;
       el.dataset.tooltipBound = '1';
-      let timer; let tipEl; let move;
-
-      function removeTip() {
-        if (!tipEl) return;
-        tipEl.style.opacity = '0';
-        setTimeout(() => { tipEl?.remove(); tipEl = null; }, SEL.fadeMs);
-        if (move) el.removeEventListener('mousemove', move);
-      }
 
       el.addEventListener('mouseenter', (e) => {
-        timer = setTimeout(() => {
+        removeActiveTip();
+        // Track mouse position before tooltip is rendered, so initial placement is correct
+        let preMove;
+        const updateLast = (ev) => { lastMouseX = ev.clientX; lastMouseY = ev.clientY; };
+        preMove = updateLast;
+        el.addEventListener('mousemove', preMove);
+        if (e && e.clientX && e.clientY) {
+          lastMouseX = e.clientX; lastMouseY = e.clientY;
+        } else {
+          const r0 = el.getBoundingClientRect();
+          lastMouseX = Math.max(8, r0.left + 8);
+          lastMouseY = Math.max(8, r0.top + 8);
+        }
+
+        function cleanupPreMove() { if (preMove) { el.removeEventListener('mousemove', preMove); preMove = null; } }
+
+        showTimer = setTimeout(() => {
           const text = resolveText(el);
           if (!text) return;
-          tipEl = document.createElement('div');
+          bindGlobalDismissOnce();
+          // Create new tip
+          const tipEl = document.createElement('div');
           tipEl.textContent = text;
           tipEl.style.position = 'fixed';
           tipEl.style.maxWidth = '280px';
@@ -60,6 +101,10 @@ const {
           tipEl.style.opacity = '0';
           tipEl.style.transition = `opacity ${SEL.fadeMs}ms ease-out`;
           document.body.appendChild(tipEl);
+
+          activeTipEl = tipEl;
+          activeHostEl = el;
+
           const place = (ev) => {
             const x = Math.min(window.innerWidth - 20, ev.clientX + 12);
             const y = Math.min(window.innerHeight - 20, ev.clientY + 12);
@@ -67,20 +112,21 @@ const {
             tipEl.style.top = y + 'px';
           };
           if (SEL.followMouse) {
-            move = place;
-            el.addEventListener('mousemove', move);
-            place(e);
+            activeMoveHandler = place;
+            el.addEventListener('mousemove', activeMoveHandler);
+            // Use the last known mouse position for initial placement
+            place({ clientX: lastMouseX, clientY: lastMouseY });
           } else {
-            // Position near element if not following mouse
             const r = el.getBoundingClientRect();
             tipEl.style.left = Math.max(8, r.left) + 'px';
             tipEl.style.top = Math.max(8, r.top - 32) + 'px';
           }
-          requestAnimationFrame(() => { tipEl && (tipEl.style.opacity = '1'); });
+          requestAnimationFrame(() => { activeTipEl && (activeTipEl.style.opacity = '1'); });
+          cleanupPreMove();
         }, SEL.delay);
       });
 
-      ['mouseleave','blur'].forEach(evt => el.addEventListener(evt, () => { clearTimeout(timer); removeTip(); }));
+      ['mouseleave','blur'].forEach(evt => el.addEventListener(evt, () => { removeActiveTip(); }));
     }
 
     function scan(root) {
@@ -100,6 +146,8 @@ const {
             if (node.matches && node.matches(SEL.selector)) attach(node);
             node.querySelectorAll && node.querySelectorAll(SEL.selector).forEach(attach);
           });
+          // If host is removed, also dismiss any active tooltip
+          m.removedNodes && m.removedNodes.forEach(() => removeActiveTip());
         });
       });
       obs.observe(root, { childList: true, subtree: true });
