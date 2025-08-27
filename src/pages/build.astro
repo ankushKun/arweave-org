@@ -8,6 +8,10 @@ import Card from "../components/Card.astro";
 ---
 
 <Layout title="Build on Arweave">
+  <!-- Temporary banner: under construction notice (Build page only) -->
+  <div id="build-banner" class="fixed top-0 left-0 w-full bg-black text-white text-center py-2 font-sans text-sm transform transition-transform duration-500 ease-in-out-quint" role="status" aria-live="polite">
+    Build page Under construction — upload functionality is limited.
+  </div>
   <section class="relative z-10 min-h-[calc(100vh-200px)]" id="build" aria-label="Build on Arweave" class="pb-12">
 
       <!-- Kicker -->
@@ -237,6 +241,7 @@ Decentralized operating system on the permaweb.            </p>
   <script>
     // @ts-nocheck
     document.addEventListener('DOMContentLoaded', () => {
+      const buildBanner = document.getElementById('build-banner');
       const openBtn = document.getElementById('open-wallet-download');
       const modal = document.getElementById('wallet-download-modal');
       const backdrop = document.getElementById('wallet-download-backdrop');
@@ -265,6 +270,19 @@ Decentralized operating system on the permaweb.            </p>
       backdrop?.addEventListener('click', close);
       cancel?.addEventListener('click', close);
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+      // Toggle the top banner based on scroll position
+      if (buildBanner) {
+        const updateBannerVisibility = () => {
+          if (window.scrollY > 0) {
+            buildBanner.classList.add('-translate-y-full');
+          } else {
+            buildBanner.classList.remove('-translate-y-full');
+          }
+        };
+        updateBannerVisibility();
+        window.addEventListener('scroll', updateBannerVisibility, { passive: true });
+      }
     });
   </script>
 </Layout>
