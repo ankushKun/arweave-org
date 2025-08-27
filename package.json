@@ -14,6 +14,13 @@
     "balance": "curl -s https://payment.ardrive.io/v1/balance?address=Qa8AAZv-sEhQRIm7xZr3CVLtlzIH8NezaY0GZhURcAc  | jq '.effectiveBalance | tonumber / 1e12'"
   },
   "dependencies": {
+    "@arweave-wallet-kit/browser-wallet-strategy": "^0.1.1",
+    "@arweave-wallet-kit/core": "^0.1.1",
+    "@arweave-wallet-kit/othent-strategy": "^0.1.1",
+    "@arweave-wallet-kit/react": "^0.3.2",
+    "@arweave-wallet-kit/styles": "^0.1.1",
+    "@arweave-wallet-kit/wander-strategy": "^0.1.2",
+    "@arweave-wallet-kit/webwallet-strategy": "^0.0.1-beta.4",
     "@astrojs/check": "^0.9.4",
     "@astrojs/react": "^4.3.0",
     "@astrojs/tailwind": "^6.0.2",
@@ -21,6 +28,7 @@
     "@phosphor-icons/web": "2.1.2",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "@vela-ventures/aosync-strategy": "^0.1.0",
     "@wanderapp/connect": "^0.1.11",
     "arweave": "^1.15.7",
     "astro": "^5.12.3",
@@ -30,5 +38,8 @@
     "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "arconnect": "^1.0.4"
   }
 }

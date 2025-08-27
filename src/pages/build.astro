@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import ScrollToTop from "../components/ScrollToTop.astro";
 import FooterAlt from "../components/Footer-Alt.astro";
 import Button from "../components/Button.astro";
+import WalletDownloadModal from "../components/WalletDownloadModal.astro";
 import Card from "../components/Card.astro";
 ---
 
@@ -36,7 +37,7 @@ import Card from "../components/Card.astro";
                 <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Drag and drop your code file to the right.</p></div>
                 <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Files under 100 KB can be deployed for free.</p></div>
                 <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">If your file is larger, you’ll need to connect your wallet.</p></div>
-                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Don’t have a wallet? <a href="#" class="underline">Set one up here</a>.</p></div>
+                <div class="flex items-start gap-3"><span class="mt-2 h-1 w-1 bg-neutral-400"></span><p class="text-p3 font-sans">Don’t have a wallet? <button id="open-wallet-download" type="button" class="underline">Choose your wallet</button>.</p></div>
               </div>
             </div>
           </section>
@@ -111,6 +112,7 @@ import Card from "../components/Card.astro";
       </div>
 
   </section>
+  <WalletDownloadModal />
 
   <!-- Data-focused developer section -->
   <section class="pt-24" aria-label="Develop with data">
@@ -133,7 +135,7 @@ import Card from "../components/Card.astro";
           tag="Docs"
           title="Get Started Developing."
           description="Your application remains accessible to everyone, forever, without the risk of censorship or removal. Visit the permaweb cookbook to start."
-          href="#"
+          href="https://cookbook.arweave.net"
           ctaText="Visit the Permaweb Cookbook"
           ctaVariant="secondary"
           contentJustifyBetween={true}
@@ -170,7 +172,7 @@ import Card from "../components/Card.astro";
           showMedia={false}
           title="Dev Utility Tools."
           description="Build with ar.io’s comprehensive suite of developer utility tools."
-          href="#"
+          href="https://ar.io"
           ctaText="Use ar.io’s development suite"
           contentJustifyBetween={true}
         />
@@ -180,7 +182,7 @@ import Card from "../components/Card.astro";
           showMedia={false}
           title="View Arweave History."
           description="Blocks, accounts, transactions, protocols, and tokens."
-          href="#"
+          href="https://viewblock.io"
           ctaText="Visit Viewblock"
           contentJustifyBetween={true}
         />
@@ -209,7 +211,7 @@ import Card from "../components/Card.astro";
             </p>
           </div>
           <div class="mt-6">
-            <Button href="#" variant="secondary" fullWidth showArrow>Explore AO Ecosystem</Button>
+            <Button href="https://ao.arweave.net" variant="secondary" fullWidth showArrow>Explore AO Ecosystem</Button>
           </div>
         </article>
 
@@ -222,7 +224,7 @@ import Card from "../components/Card.astro";
 Decentralized operating system on the permaweb.            </p>
           </div>
           <div class="mt-6">
-            <Button href="#" variant="secondary" fullWidth showArrow>Start Hyperbeam</Button>
+            <Button href="https://hyperbeam.arweave.net" variant="secondary" fullWidth showArrow>Start Hyperbeam</Button>
           </div>
         </article>
       </div>
@@ -231,4 +233,38 @@ Decentralized operating system on the permaweb.            </p>
   <FooterAlt />
 
   <ScrollToTop threshold={800} />
+
+  <script>
+    // @ts-nocheck
+    document.addEventListener('DOMContentLoaded', () => {
+      const openBtn = document.getElementById('open-wallet-download');
+      const modal = document.getElementById('wallet-download-modal');
+      const backdrop = document.getElementById('wallet-download-backdrop');
+      const cancel = document.getElementById('wallet-download-cancel');
+      const panel = modal?.querySelector('[role="dialog"]');
+
+      function open() {
+        if (!modal) return;
+        modal.classList.add('flex');
+        modal.classList.remove('pointer-events-none');
+        modal.style.opacity = '1';
+        panel?.classList.remove('scale-95');
+        panel?.classList.add('scale-100');
+        backdrop?.classList.add('opacity-100');
+      }
+      function close() {
+        if (!modal) return;
+        panel?.classList.remove('scale-100');
+        panel?.classList.add('scale-95');
+        backdrop?.classList.remove('opacity-100');
+        modal.style.opacity = '0';
+        modal.classList.add('pointer-events-none');
+        setTimeout(() => modal.classList.remove('flex'), 300);
+      }
+      openBtn?.addEventListener('click', open);
+      backdrop?.addEventListener('click', close);
+      cancel?.addEventListener('click', close);
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    });
+  </script>
 </Layout>

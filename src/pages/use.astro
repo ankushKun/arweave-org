@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import WanderAuth from "../components/WanderAuth";
-import WalletModal from "../components/WalletModal.astro";
+import WalletDownloadModal from "../components/WalletDownloadModal.astro";
 import ScrollToTop from "../components/ScrollToTop.astro";
 import FooterAlt from "../components/Footer-Alt.astro";
 import Button from "../components/Button.astro";
@@ -94,7 +94,7 @@ import Card from "../components/Card.astro";
         </div>
       </div>
 
-      <WalletModal />
+      <WalletDownloadModal />
 
 </section>
     <!-- Next Section: Tutorial and Resources -->
@@ -175,7 +175,7 @@ import Card from "../components/Card.astro";
         <Card
           title="Get Wallet."
           description="Choose an Arweave wallet that suits your device compatibility and personal preferences."
-          href="#"
+          href="#wallets"
           ctaText="Choose Your Wallet."
           showBottomOverlay
           image="https://arweave.net/KYxXmKf35Qdu4xoBDXuFqR9UnsTcNe8m2cuvl5Y0BRU"
@@ -186,7 +186,7 @@ import Card from "../components/Card.astro";
         <Card
           title="Smart Contracts."
           description="Create and deploy smart contracts that leverage its decentralized storage capabilities."
-          href="#"
+          href="https://ao.arweave.net"
           ctaText="Develop on AO."
           showBottomOverlay
           image="https://arweave.net/O92ZbziDRxqq4mDqEDxNpC4P3wuRCgpWYQuh2zxgzXM"
@@ -294,6 +294,8 @@ import Card from "../components/Card.astro";
           if (spinnerEl) spinnerEl.classList.add('hidden');
           if (checkEl) checkEl.classList.remove('hidden');
           // Do NOT switch to Step 2 yet; wait for successful transaction
+          // Directly trigger WanderConnect flow now that file is ready
+          setTimeout(() => (window as any).__wanderConnectAndUpload?.(), 0);
         }
 
         if (dz && finputEl) {
@@ -347,111 +349,50 @@ import Card from "../components/Card.astro";
         if (step1) {
           step1.classList.add('flex', 'flex-col', 'h-full');
         }
+
+        // Wallet Download modal open/close wiring
+        const dlModal = document.getElementById('wallet-download-modal');
+        const dlPanel = dlModal?.querySelector('[role="dialog"]') as HTMLElement | null;
+        const dlBackdrop = document.getElementById('wallet-download-backdrop');
+        const dlCancel = document.getElementById('wallet-download-cancel');
+
+        function openWallets() {
+          if (!dlModal || !dlPanel) return;
+          dlModal.classList.add('flex');
+          dlModal.classList.remove('pointer-events-none');
+          dlModal.style.opacity = '1';
+          dlPanel.classList.remove('scale-95');
+          dlPanel.classList.add('scale-100');
+          dlBackdrop?.classList.add('opacity-100');
+          document.addEventListener('keydown', onDlKeydown);
+        }
+        function closeWallets() {
+          if (!dlModal || !dlPanel) return;
+          dlPanel.classList.remove('scale-100');
+          dlPanel.classList.add('scale-95');
+          dlBackdrop?.classList.remove('opacity-100');
+          dlModal.style.opacity = '0';
+          dlModal.classList.add('pointer-events-none');
+          setTimeout(() => dlModal.classList.remove('flex'), 300);
+          document.removeEventListener('keydown', onDlKeydown);
+        }
+        function onDlKeydown(e) { if (e.key === 'Escape') closeWallets(); }
+
+        document.querySelectorAll('a[href="#wallets"]').forEach((a) => {
+          a.addEventListener('click', (e) => { e.preventDefault(); openWallets(); });
+        });
+        dlBackdrop?.addEventListener('click', closeWallets);
+        dlCancel?.addEventListener('click', closeWallets);
       });
     </script>
     <script>
       // @ts-nocheck
       ;(function () {
-        // Modal elements
-        const modal = document.getElementById('wallet-modal');
-        const btnPrimary = document.getElementById('btn-wanderconnect');
-        const btnCancel = document.getElementById('wallet-modal-cancel');
-        const backdrop = document.getElementById('wallet-modal-backdrop');
-
-        function openModal() {
-          if (!modal) return;
-          modal.classList.add('flex');
-          modal.classList.remove('hidden');
-          // animate in
-          modal.classList.remove('pointer-events-none');
-          modal.style.opacity = '1';
-          const panel = modal.querySelector('[role="dialog"]');
-          const backdrop = document.getElementById('wallet-modal-backdrop');
-          panel && (panel as HTMLElement).classList.remove('scale-95');
-          panel && (panel as HTMLElement).classList.add('scale-100');
-          backdrop && (backdrop as HTMLElement).classList.add('opacity-100');
-          // Focus primary for accessibility
-          setTimeout(() => btnPrimary?.focus(), 0);
-          document.addEventListener('keydown', onKeydown);
-        }
-
-        function closeModal() {
-          if (!modal) return;
-          // animate out
-          const panel = modal.querySelector('[role="dialog"]');
-          const backdrop = document.getElementById('wallet-modal-backdrop');
-          panel && (panel as HTMLElement).classList.remove('scale-100');
-          panel && (panel as HTMLElement).classList.add('scale-95');
-          backdrop && (backdrop as HTMLElement).classList.remove('opacity-100');
-          modal.style.opacity = '0';
-          modal.classList.add('pointer-events-none');
-          setTimeout(() => {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-          }, 200);
-          document.removeEventListener('keydown', onKeydown);
-        }
-
-        function onKeydown(e) {
-          if (e.key === 'Escape') closeModal();
-        }
-
-        // Hook into existing file selection pipeline:
-        const finputEl = document.getElementById('file-input');
-
-        // Patch change/drop listeners to open the modal after setName runs.
-        const dz = document.getElementById('dropzone');
-        function afterSetName() {
-          if (!(window as any).__fileOk) return;
-          openModal();
-        }
-
-        if (dz) {
-          dz.addEventListener('drop', () => setTimeout(afterSetName, 0));
-          dz.addEventListener('click', () => {
-            // clicking dropzone triggers file picker; change event will handle modal
-          });
-        }
-        if (finputEl instanceof HTMLInputElement) {
-          finputEl.addEventListener('change', () => setTimeout(afterSetName, 0));
-        }
-
-        // Wire modal buttons - all actions close the modal with animation
-        btnCancel?.addEventListener('click', closeModal);
-        backdrop?.addEventListener('click', closeModal);
-        // Close on any link/button inside the modal as well
-        const modalClickables = modal?.querySelectorAll('a, button');
-        modalClickables?.forEach((el) => {
-          el.addEventListener('click', () => {
-            // Allow default navigation/handlers to proceed; just animate out modal
-            closeModal();
-          }, { capture: true });
-        });
-
-        // WanderConnect action - delegate to React helper
-        btnPrimary?.addEventListener('click', async () => {
-          // Close modal first for consistent UX, then continue
-          closeModal();
-          setTimeout(() => (window as any).__wanderConnectAndUpload?.(), 0);
-        });
-
-        // Beacon integration via AO-Sync (if available in page)
-        const beaconBtn = document.getElementById('btn-beacon');
-        beaconBtn?.addEventListener('click', async (e) => {
-          e.preventDefault();
-          try {
-            closeModal();
-            // Expect an app-level helper to exist when AO-Sync is installed, similar to Wander flow
-            // This should call connect() from @vela-ventures/aosync-sdk-react useWallet, then continue upload
-            (window as any).__beaconConnectAndUpload?.();
-          } catch (err) {
-            console.error('[WalletModal] Beacon connect failed', err);
-          }
-        });
+        // No WalletModal on this page anymore; direct connect handled earlier.
       })();
     </script>
   </section>
   <FooterAlt />
 
-  <ScrollToTop threshold={800} higher={true} />
+  <ScrollToTop threshold={800}/>
 </Layout>
